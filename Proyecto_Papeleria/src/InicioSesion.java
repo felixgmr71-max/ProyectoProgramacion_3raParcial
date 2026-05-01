@@ -11,6 +11,8 @@ import java.awt.event.FocusEvent;
 import java.awt.Color;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class InicioSesion extends JFrame {
 
@@ -27,6 +29,7 @@ public class InicioSesion extends JFrame {
 			public void run() {
 				try {
 					InicioSesion frame = new InicioSesion();
+					frame.setLocationRelativeTo(null); 
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -129,6 +132,20 @@ public class InicioSesion extends JFrame {
 		});
 		
 		JButton btnIngresar = new JButton("Ingresar");
+		btnIngresar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				//Aqui hay que poner un if y un else para validar la contraseña y usuario
+				
+				
+				//Al presionar iniciar sesion nos manda a el menú principal
+				MenuPrincipal menu = new MenuPrincipal();
+				menu.setVisible(true);
+				
+				dispose(); //Cerrar ventana de Inicio de Sesion
+				
+			}
+		});
 		btnIngresar.setBounds(183, 174, 84, 20);
 		contentPane.add(btnIngresar);
 
