@@ -14,6 +14,11 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//para bd
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+
 public class InicioSesion extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -28,6 +33,11 @@ public class InicioSesion extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					// 1. Preparamos la BD antes de mostrar algo
+					Conexion con = new Conexion();
+					con.inicializarBaseDeDatos();
+					
+					// 2. Mostramos la ventana
 					InicioSesion frame = new InicioSesion();
 					frame.setLocationRelativeTo(null); 
 					frame.setVisible(true);
@@ -135,15 +145,44 @@ public class InicioSesion extends JFrame {
 		btnIngresar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				//Aqui hay que poner un if y un else para validar la contraseña y usuario
+				// 1. Obtener lo que el usuario escribió
+				String usr = txtUsuario.getText();
+				String pass = new String(passwordField.getPassword());
 				
+				// 2. Validar que no sean los placeholder de ejemplo
+				if (usr.equals("Usuario...") || pass.equals("Contraseña...") || usr.isEmpty() || pass.isEmpty()) {
+					javax.swing.JOptionPane.showMessageDialog(null, "Por favor, llene todos los campos.");
+					return; // Detiene la ejecución aquí
+				}
 				
-				//Al presionar iniciar sesion nos manda a el menú principal
-				MenuPrincipal menu = new MenuPrincipal();
-				menu.setVisible(true);
+				// 3. Consultar la BD
+				Conexion con = new Conexion();
+				String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
 				
-				dispose(); //Cerrar ventana de Inicio de Sesion
-				
+				try (java.sql.Connection acceso = con.conectar();
+				     java.sql.PreparedStatement ps = acceso.prepareStatement(sql)) {
+					
+					ps.setString(1, usr);
+					ps.setString(2, pass);
+					
+					java.sql.ResultSet rs = ps.executeQuery();
+					
+					// Si rs.next() es true, significa que encontró al usuario
+					if (rs.next()) {
+						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
+						
+						// Al presionar iniciar sesion nos manda a el menú principal
+						MenuPrincipal menu = new MenuPrincipal();
+						menu.setVisible(true);
+						
+						dispose(); // Cerrar ventana de Inicio de Sesion
+					} else {
+						javax.swing.JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
+					}
+					
+				} catch (Exception ex) {
+					javax.swing.JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage());
+				}
 			}
 		});
 		btnIngresar.setBounds(183, 174, 84, 20);
