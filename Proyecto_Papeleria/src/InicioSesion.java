@@ -187,6 +187,9 @@ public class InicioSesion extends JFrame {
 		});
 		btnIngresar.setBounds(183, 174, 84, 20);
 		contentPane.add(btnIngresar);
+		
+		//Esta linea hace que el botón ingresar se presione oprimiendo Enter
+		this.getRootPane().setDefaultButton(btnIngresar);
 
 	}
 }

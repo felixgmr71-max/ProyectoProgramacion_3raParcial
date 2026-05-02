@@ -60,6 +60,23 @@ public class MenuCatalogoUsuarios extends JFrame {
 		});
 		BtnSalir.setBounds(496, 358, 170, 20);
 		contentPane.add(BtnSalir);
+		
+		/*Programamos la tecla ESC para que al presionarla regrese al menú principal*/
+		
+		//1.Definimos que la tecla a escuchar es el ESC
+		javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0);
+				
+		//2.Le decimos a la ventana que escuche esa tecla siempre que esté activa
+		this.getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(esc, "accionVolver");
+				
+		//3.Le decimos qué hacer cuando detecte la pulsación
+		this.getRootPane().getActionMap().put("accionVolver", new javax.swing.AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+						
+				BtnSalir.doClick(); //Simula un clic en tu botón de salir
+				
+			}
+		});
 
 	}
 
