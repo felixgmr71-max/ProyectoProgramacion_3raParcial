@@ -37,6 +37,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 	
 	
 	boolean EsModificacion = false;
+	int idUserModify = 0;
 	//DefaultTableModel modelo = new DefaultTableModel();
 	
 	
@@ -81,7 +82,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 				MenuPrincipal menuprincipal = new MenuPrincipal();
 				menuprincipal.setVisible(true);
 				
-				dispose(); //Cerrar ventana
+				dispose(); //Cerramos la ventana
 			}
 		});
 		BtnSalir.setBounds(496, 358, 170, 20);
@@ -134,12 +135,12 @@ public class MenuCatalogoUsuarios extends JFrame {
 		JButton btnIngresar = new JButton("Ingresar");
 		btnIngresar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			        // 1. Obtener los datos de los componentes
+			        // Recuperamos el usuario de las cajas de texto
 			        String usuario = txtUsuario.getText().trim();
-			        // Para los JPasswordField se recomienda usar getPassword() y convertirlo a String
+			        // Obtenemos la contraseña y convertimos a texto
 			        String password = new String(passwordField.getPassword()).trim(); 
 			        
-			        // Determinar el Rol (Suponiendo que 1 = Admin y 2 = Vendedor)
+			        // Determinamos el rol
 			        int rolId = 0;
 			        if (rdbAdmin.isSelected()) {
 			            rolId = 1;
@@ -147,43 +148,58 @@ public class MenuCatalogoUsuarios extends JFrame {
 			            rolId = 2;
 			        }
 			        
-			        // 2. Validaciones básicas
+			        // validaciones
 			        if (usuario.isEmpty() || password.isEmpty() || rolId == 0) {
 			            JOptionPane.showMessageDialog(null, "Por favor, llena todos los campos y selecciona un rol.", "Aviso", JOptionPane.WARNING_MESSAGE);
-			            return; // Detenemos la ejecución si falta algo
+			            return; // detenemos al usuario en caso de faltar info
 			        }
 			        
-			        // 3. Conexión y Sentencia SQL con PreparedStatement (Uso de '?')
+			        // hacemos la conexion y dejamos preparada la sentencia
 			        Conexion conDB = new Conexion();
-			        String sql = "INSERT INTO usuarios (username, password, rol_id) VALUES (?, ?, ?)";
-			        
-			        // Usamos try-with-resources para que la conexión se cierre sola al terminar
+			        String sql;
+
+			        // checamos si es modificacion o insercion
+			        if (EsModificacion == true) {
+			            sql = "UPDATE usuarios SET username = ?, password = ?, rol_id = ? WHERE id_usuario = ?";
+			        } else {
+			            sql = "INSERT INTO usuarios (username, password, rol_id) VALUES (?, ?, ?)";
+			        }
+
 			        try (Connection conn = conDB.conectar();
 			             java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			            
-			            // Sustituimos los '?' por nuestras variables
+
 			            pstmt.setString(1, usuario);
 			            pstmt.setString(2, password);
 			            pstmt.setInt(3, rolId);
 			            
-			            // Ejecutamos la inserción
+			            // Si es modificación agregamos el ID al final para el WHERE
+			            if (EsModificacion == true) {
+			                pstmt.setInt(4, idUserModify);
+			            }
+			            
 			            int registros = pstmt.executeUpdate();
 			            
 			            if (registros > 0) {
-			                JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.");
+			                if (EsModificacion == true) {
+			                    JOptionPane.showMessageDialog(null, "Usuario actualizado exitosamente.");
+			                    EsModificacion = false; // Apagamos la bandera
+			                    btnIngresar.setText("Ingresar"); // Regresamos el texto a la normalidad
+			                } else {
+			                    JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.");
+			                }
 			                
-			                // Limpiamos el formulario para el siguiente ingreso
+			                // limpiamos los campos
 			                txtUsuario.setText("");
 			                passwordField.setText("");
 			                grupo.clearSelection();
+			                table.clearSelection();
 			                
-			                // ¡Actualizamos la tabla
+			                // se actualiza la tabla
 			                cargarDatos(); 
 			            }
 			            
-			        } catch (SQLException error) {
-			            // Manejo de errores (por ejemplo, si el username ya existe porque es UNIQUE)
-			            JOptionPane.showMessageDialog(null, "Ocurrió un error al guardar: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			        } catch (SQLException error) {			        
+			            JOptionPane.showMessageDialog(null, "Ocurrió un error: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			        }
 			}
 		});
@@ -191,10 +207,96 @@ public class MenuCatalogoUsuarios extends JFrame {
 		contentPane.add(btnIngresar);
 		
 		JButton btnModificar = new JButton("Modificar");
+		btnModificar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int filaSeleccionada = table.getSelectedRow();
+		        
+		        if (filaSeleccionada == -1) {
+		            JOptionPane.showMessageDialog(null, "Por favor, selecciona un usuario de la tabla para modificar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+		            return;
+		        }
+
+		        // le pasamos el id a la variable global
+		        idUserModify = (int) table.getValueAt(filaSeleccionada, 0);
+
+		        // cargamos las cajas
+		        txtUsuario.setText(table.getValueAt(filaSeleccionada, 1).toString());
+		        passwordField.setText(table.getValueAt(filaSeleccionada, 2).toString());
+		        
+		        // se selecciona el rd button
+		        int rol = (int) table.getValueAt(filaSeleccionada, 3);
+		        if(rol == 1) {
+		            rdbAdmin.setSelected(true);
+		        } else if(rol == 2) {
+		            rdbtnVendedor.setSelected(true);
+		        }
+
+		        // se prende la bandera
+		        EsModificacion = true;
+		        
+		        //Le cambiamos el texto al botón Ingresar para que el usuario entienda
+		        btnIngresar.setText("Guardar Cambios");
+			}
+		});
 		btnModificar.setBounds(10, 265, 143, 20);
 		contentPane.add(btnModificar);
 		
 		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int fila = table.getSelectedRow();
+				
+				if (fila == -1) {
+		            JOptionPane.showMessageDialog(null, "Por favor, selecciona un usuario de la tabla para removerlo", "Aviso", JOptionPane.WARNING_MESSAGE);
+		            return;
+		        }
+				
+		        // sacamos el id del usuario
+		        int idUsuarioBorrar = (int) table.getValueAt(fila, 0);
+
+		        // verificamos
+		        int respuesta = JOptionPane.showConfirmDialog(null, 
+		                "¿Estás completamente seguro de que deseas eliminar a este usuario?", 
+		                "Confirmar Eliminación", 
+		                JOptionPane.YES_NO_OPTION, 
+		                JOptionPane.WARNING_MESSAGE);
+
+		        // en caso de que sí, borramos
+		        if (respuesta == JOptionPane.YES_OPTION) {
+		            
+		            Conexion conDB = new Conexion();
+		            // Sentencia SQL: Borra de la tabla usuarios SOLAMENTE donde el ID coincida
+		            String sql = "DELETE FROM usuarios WHERE id_usuario = ?";
+
+		            try (Connection conn = conDB.conectar();
+		                 java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+		                
+		                // pasamos el id al signo de interrogacion
+		                pstmt.setInt(1, idUsuarioBorrar);
+		                
+		                // se borra
+		                int registros = pstmt.executeUpdate();
+		                
+		                if (registros > 0) {
+		                    JOptionPane.showMessageDialog(null, "Usuario eliminado exitosamente.");
+		                    
+		                    // Limpiamos las cajas y deseleccionamos todo
+		                    txtUsuario.setText("");
+		                    passwordField.setText("");
+		                    grupo.clearSelection();
+		                    table.clearSelection();
+		                    
+		                    // Actualizamos la tabla para que el usuario desaparezca de la pantalla
+		                    cargarDatos(); 
+		                }
+		                
+		            } catch (SQLException error) {			        
+		                JOptionPane.showMessageDialog(null, "Ocurrió un error al eliminar: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		            }
+		        }
+		        // Si responde que "No", no hacemos nada y la ventana se queda igual
+			}
+		});
 		btnEliminar.setBounds(10, 294, 143, 20);
 		contentPane.add(btnEliminar);
 		
@@ -218,8 +320,9 @@ public class MenuCatalogoUsuarios extends JFrame {
 
 	}
 	
+	//funcion para mostrar los datos de nuetra base en la tabla
 	public void cargarDatos() {
-		// 1. Definir el modelo de la tabla
+		// definimos el modelo
 	    DefaultTableModel modelo = new DefaultTableModel();
 	    modelo.addColumn("ID");
 	    modelo.addColumn("Nombre de Usuario");
@@ -229,19 +332,17 @@ public class MenuCatalogoUsuarios extends JFrame {
 	    table.setModel(modelo);
 	    modelo.setRowCount(0);
 
-	    // NUEVO: Asegurarnos de que la BD existe y tiene los datos de prueba antes de consultarla
 	    Conexion conDB = new Conexion();
 	    conDB.inicializarBaseDeDatos();
 
-	    // 2. Conectar a SQLite y consultar
-	    // Usamos el método conectar() de tu propia clase para no repetir código
+	    //nos conectamos a la bd y mandamos sentencia
 	    String sql = "SELECT id_usuario, username, password, rol_id FROM usuarios"; 
 
 	    try (Connection conn = conDB.conectar();
 	         Statement stmt = conn.createStatement();
 	         ResultSet rs = stmt.executeQuery(sql)) {
 
-	        // 3. Recorrer los resultados y agregarlos al modelo
+	        // se van recorriendo y agregando los datos al modelo
 	        while (rs.next()) {
 	            Object[] fila = new Object[4]; 
 	            fila[0] = rs.getInt("id_usuario");
