@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.JTextField;
 
 public class MenuProductos extends JFrame {
 
@@ -33,6 +34,7 @@ public class MenuProductos extends JFrame {
 		Connection Conexion = null;
 		Statement SentenciaSQL = null;
 		ResultSet Rs = null;
+		private JTextField txtBuscar;
 		
 	/**
 	 * Launch the application.
@@ -56,7 +58,7 @@ public class MenuProductos extends JFrame {
 	 */
 	public MenuProductos() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 690, 425);
+		setBounds(100, 100, 819, 425);
 		setLocationRelativeTo(null); //Centra la ventana
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -65,7 +67,7 @@ public class MenuProductos extends JFrame {
 		
 		JLabel lblProductos = new JLabel("Productos");
 		lblProductos.setFont(new Font("Century Gothic", Font.BOLD, 30));
-		lblProductos.setBounds(275, -3, 157, 72);
+		lblProductos.setBounds(10, 0, 157, 72);
 		contentPane.add(lblProductos);
 		
 		JButton BtnSalir = new JButton("Volver al menú principal");
@@ -78,11 +80,11 @@ public class MenuProductos extends JFrame {
 				dispose(); //Cerrar ventana
 			}
 		});
-		BtnSalir.setBounds(496, 358, 170, 20);
+		BtnSalir.setBounds(625, 358, 170, 20);
 		contentPane.add(BtnSalir);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 59, 656, 240);
+		scrollPane.setBounds(10, 59, 785, 240);
 		contentPane.add(scrollPane);
 		
 		//Columnas de la tabla
@@ -219,6 +221,69 @@ public class MenuProductos extends JFrame {
 		});
 		btnEliminar.setBounds(10, 309, 110, 31);
 		contentPane.add(btnEliminar);
+		
+		txtBuscar = new JTextField();
+		txtBuscar.setBounds(171, 29, 376, 20);
+		contentPane.add(txtBuscar);
+		txtBuscar.setColumns(10);
+		
+		JButton btnBuscar = new JButton("Buscar");
+		btnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String termino = txtBuscar.getText().trim();
+		        
+		        //Si la caja está vacía, recargamos la tabla
+		        if (termino.isEmpty()) {
+		            Mostrar_Informacion(); 
+		            return;
+		        }
+		        
+		        modelo.setRowCount(0);
+		        
+		        try {
+		            Conexion = DriverManager.getConnection("jdbc:sqlite:papeleria.db");
+		            
+		            String sql = "SELECT id_producto, codigo, nombre, precio_compra, precio_venta, stock FROM Productos WHERE nombre LIKE ?";
+		            java.sql.PreparedStatement pstmt = Conexion.prepareStatement(sql);
+		            
+		            // Inyectamos la palabra al '?' con los comodines %
+		            pstmt.setString(1, "%" + termino + "%");
+		            
+		            ResultSet rs = pstmt.executeQuery();
+		            
+		            boolean hayResultados = false;
+		            
+		            // Llena la tabla usando un arreglo 
+		            while (rs.next()) {
+		                String[] Valores = new String[6]; 
+		                Valores[0] = rs.getString("id_producto");
+		                Valores[1] = rs.getString("codigo");
+		                Valores[2] = rs.getString("nombre");
+		                Valores[3] = rs.getString("precio_compra");
+		                Valores[4] = rs.getString("precio_venta");
+		                Valores[5] = rs.getString("stock");
+
+		                modelo.addRow(Valores);
+		                hayResultados = true;
+		            }
+		            
+		            // Si no se encuentra nada, avisamos y mostramos todos de nuevo
+		            if (hayResultados == false) {
+		                JOptionPane.showMessageDialog(null, "No se encontraron coincidencias.", "Búsqueda", JOptionPane.INFORMATION_MESSAGE);
+		                txtBuscar.setText(""); // Limpiamos la caja de búsqueda
+		                Mostrar_Informacion(); 
+		            }
+		            
+		            pstmt.close();
+		            Conexion.close();
+		            
+		        } catch (SQLException error) {
+		            JOptionPane.showMessageDialog(null, "Error en la búsqueda: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+			}
+		});
+		btnBuscar.setBounds(557, 29, 109, 20);
+		contentPane.add(btnBuscar);
 		
 		//Programamos la tecla ESC para que al presionarla regrese al menú principal
 		
