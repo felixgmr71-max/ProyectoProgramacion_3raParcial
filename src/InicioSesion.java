@@ -1,0 +1,195 @@
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.Color;
+import javax.swing.JPasswordField;
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+//para bd
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+
+public class InicioSesion extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private JTextField txtUsuario;
+	private JPasswordField passwordField;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					// 1. Preparamos la BD antes de mostrar algo
+					Conexion con = new Conexion();
+					con.inicializarBaseDeDatos();
+					
+					// 2. Mostramos la ventana
+					InicioSesion frame = new InicioSesion();
+					frame.setLocationRelativeTo(null); 
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public InicioSesion() {
+		setResizable(false);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 450, 300);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("Inicio de Sesión");
+		lblNewLabel.setFont(new Font("Times New Roman", Font.BOLD | Font.ITALIC, 35));
+		lblNewLabel.setBounds(95, 10, 253, 45);
+		contentPane.add(lblNewLabel);
+		
+		txtUsuario = new JTextField();
+		txtUsuario.setForeground(new Color(192, 192, 192));
+		txtUsuario.setFont(new Font("Garamond", Font.PLAIN, 25));
+		txtUsuario.setText("Usuario...");
+		txtUsuario.setBounds(64, 65, 310, 27);
+		contentPane.add(txtUsuario);
+		txtUsuario.setColumns(10);
+		txtUsuario.setFocusable(false);
+		
+		txtUsuario.addMouseListener(new java.awt.event.MouseAdapter() {
+		    public void mouseClicked(java.awt.event.MouseEvent evt) {
+			    	txtUsuario.setFocusable(true);
+			    	txtUsuario.requestFocusInWindow();
+		    }
+		});
+		
+		txtUsuario.addFocusListener(new FocusAdapter() {
+		    @Override
+		    public void focusGained(FocusEvent e) {
+		        if (txtUsuario.getText().equals("Usuario...")) {
+		            txtUsuario.setText("");
+		            txtUsuario.setForeground(Color.BLACK);
+		        }
+		    }
+
+		    @Override
+		    public void focusLost(FocusEvent e) {
+		        if (txtUsuario.getText().isEmpty()) {
+		            txtUsuario.setText("Usuario...");
+		            txtUsuario.setForeground(new Color(192, 192, 192));
+		        }
+		    }
+		});
+		
+		passwordField = new JPasswordField();
+		passwordField.setFont(new Font("Garamond", Font.PLAIN, 25));
+		passwordField.setBounds(64, 116, 310, 27);
+		contentPane.add(passwordField);
+		String placeholder = "Contraseña...";
+		passwordField.setForeground(new Color(192, 192, 192));
+		passwordField.setText(placeholder);
+		passwordField.setEchoChar((char) 0);
+		contentPane.add(passwordField);
+		passwordField.setFocusable(false);
+		
+		passwordField.addMouseListener(new java.awt.event.MouseAdapter() {
+		    public void mouseClicked(java.awt.event.MouseEvent evt) {
+		    	passwordField.setFocusable(true);
+		    	passwordField.requestFocusInWindow();
+		    }
+		});
+		
+		passwordField.addFocusListener(new FocusAdapter() {
+		    @Override
+		    public void focusGained(FocusEvent e) {
+		        String pass = new String(passwordField.getPassword());
+		        
+		        if (pass.equals(placeholder)) {
+		            passwordField.setText("");
+		            passwordField.setForeground(Color.BLACK);
+		            passwordField.setEchoChar('•'); 
+		        }
+		    }
+
+		    @Override
+		    public void focusLost(FocusEvent e) {
+		        String pass = new String(passwordField.getPassword());
+		        
+		        if (pass.isEmpty()) {
+		            passwordField.setText(placeholder);
+		            passwordField.setForeground(new Color(192, 192, 192));
+		            passwordField.setEchoChar((char) 0); 
+		        }
+		    }
+		});
+		
+		JButton btnIngresar = new JButton("Ingresar");
+		btnIngresar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				// 1. Obtener lo que el usuario escribió
+				String usr = txtUsuario.getText();
+				String pass = new String(passwordField.getPassword());
+				
+				// 2. Validar que no sean los placeholder de ejemplo
+				if (usr.equals("Usuario...") || pass.equals("Contraseña...") || usr.isEmpty() || pass.isEmpty()) {
+					javax.swing.JOptionPane.showMessageDialog(null, "Por favor, llene todos los campos.");
+					return; // Detiene la ejecución aquí
+				}
+				
+				// 3. Consultar la BD
+				Conexion con = new Conexion();
+				String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
+				
+				try (java.sql.Connection acceso = con.conectar();
+				     java.sql.PreparedStatement ps = acceso.prepareStatement(sql)) {
+					
+					ps.setString(1, usr);
+					ps.setString(2, pass);
+					
+					java.sql.ResultSet rs = ps.executeQuery();
+					
+					// Si rs.next() es true, significa que encontró al usuario
+					if (rs.next()) {
+						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
+						
+						// Al presionar iniciar sesion nos manda a el menú principal
+						MenuPrincipal menu = new MenuPrincipal();
+						menu.setVisible(true);
+						
+						dispose(); // Cerrar ventana de Inicio de Sesion
+					} else {
+						javax.swing.JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
+					}
+					
+				} catch (Exception ex) {
+					javax.swing.JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage());
+				}
+			}
+		});
+		btnIngresar.setBounds(183, 174, 84, 20);
+		contentPane.add(btnIngresar);
+		
+		//Esta linea hace que el botón ingresar se presione oprimiendo Enter
+		this.getRootPane().setDefaultButton(btnIngresar);
+
+	}
+}
