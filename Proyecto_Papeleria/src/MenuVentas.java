@@ -25,7 +25,7 @@ public class MenuVentas extends JFrame {
 	private JTextField TxtProductos;
 	private JTable TbProductosDsp;
 	private JTable TbCarritoCompras;
-	private JLabel LblTotal;
+	private JLabel LblSubtotal;
 	
 	//Variable para agregar filas y columnas a la tabla 
 	DefaultTableModel modelo = new DefaultTableModel();
@@ -134,6 +134,8 @@ public class MenuVentas extends JFrame {
 		//Le asignamos el modelo a la tabla
 		TbProductosDsp.setModel(modelo);
 		
+		TbProductosDsp.setDefaultEditor(Object.class, null);
+		
 		JLabel lblCarritoDeCompras = new JLabel("CARRITO DE COMPRAS");
 		lblCarritoDeCompras.setFont(new Font("Tahoma", Font.BOLD, 16));
 		lblCarritoDeCompras.setBounds(506, 64, 201, 19);
@@ -154,7 +156,8 @@ public class MenuVentas extends JFrame {
 
 		// Asignamos el modelo a la tabla
 		TbCarritoCompras.setModel(modeloCarrito);
-
+		
+		TbCarritoCompras.setDefaultEditor(Object.class, null);
 		// Ocultamos la columna ID
 		TbCarritoCompras.getColumnModel().getColumn(0).setMinWidth(0);
 		TbCarritoCompras.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -171,22 +174,29 @@ public class MenuVentas extends JFrame {
 				
 				
 				int fila = TbCarritoCompras.getSelectedRow();
-				 if(fila==-1) {
-					 JOptionPane.showMessageDialog(null, "Seleccione el producto que desea eliminar");
-					 return;
-				 }
-				 
-				 //Recuperamos datos
-				int idProducto = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 0).toString());
 
-				int cantidad = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 3).toString());
+				if (fila == -1) {
+					JOptionPane.showMessageDialog(
+							null,
+							"Seleccione el producto que desea eliminar");
+					return;
+				}
+				 
+				// Recuperamos datos
+				int idProducto = Integer.parseInt(
+						TbCarritoCompras.getValueAt(fila, 0).toString());
+
+				int cantidad = Integer.parseInt(
+						TbCarritoCompras.getValueAt(fila, 3).toString());
 				
 				try {
+
 					Conexion con = new Conexion();
 					Connection cn = con.conectar();
 					
-					//Regresamos el stock
-					String sql = "UPDATE Productos SET stock = stock + ? " + "WHERE id_producto = ?";
+					// Regresamos el stock
+					String sql = "UPDATE Productos SET stock = stock + ? "
+							   + "WHERE id_producto = ?";
 					
 					PreparedStatement ps = cn.prepareStatement(sql);
 					
@@ -199,21 +209,25 @@ public class MenuVentas extends JFrame {
 					cn.close();
 
 				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(null,"Error al devolver stock: " + e1.getMessage());
+
+					JOptionPane.showMessageDialog(
+							null,
+							"Error al devolver stock: " + e1.getMessage());
 				}
 				
-				//Eliminamos del carrito
+				// Eliminamos del carrito
 				modeloCarrito.removeRow(fila);
 				
 				// Actualizamos tabla
 				mostrarProductos();
 				
-				//Actualizar tabla de productos
+				// Actualizamos total
 				calcularTotal();
 				
-				
-				
-				
+				// Mensaje de éxito
+				JOptionPane.showMessageDialog(
+						null,
+						"Producto eliminado correctamente.");
 			}
 		});
 		BtnEliminar.setBounds(437, 406, 141, 42);
@@ -459,15 +473,40 @@ public class MenuVentas extends JFrame {
 				
 
 				if (modeloCarrito.getRowCount() == 0) {
-					JOptionPane.showMessageDialog(null,"No hay productos en el carrito.");
+					JOptionPane.showMessageDialog(
+							null,
+							"No hay productos en el carrito.");
 					return;
 				}
 
-				JOptionPane.showMessageDialog(null,"Venta realizada correctamente.");
+				// Variables
+				int totalProductos = 0;
+				double totalVenta = 0;
 
-				// Limpiamos el carrito
+				// Recorremos el carrito
+				for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
+
+					int cantidad = Integer.parseInt(
+							modeloCarrito.getValueAt(i, 3).toString());
+
+					double subtotal = Double.parseDouble(
+							modeloCarrito.getValueAt(i, 4).toString());
+
+					totalProductos += cantidad;
+					totalVenta += subtotal;
+				}
+
+				// Mostramos resumen
+				JOptionPane.showMessageDialog(
+						null,
+						"Venta realizada correctamente."
+						+ "\n\nProductos vendidos: " + totalProductos
+						+ "\nTotal pagado: $" + totalVenta);
+
+				// Limpiamos carrito
 				modeloCarrito.setRowCount(0);
-				
+
+				// Actualizamos total
 				calcularTotal();
 			}
 		});
@@ -475,10 +514,10 @@ public class MenuVentas extends JFrame {
 		BtnVenta.setBounds(639, 469, 147, 42);
 		contentPane.add(BtnVenta);
 		
-		LblTotal = new JLabel("Total: $0.0");
-		LblTotal.setFont(new Font("Tahoma", Font.BOLD, 16));
-		LblTotal.setBounds(490, 479, 170, 19);
-		contentPane.add(LblTotal);
+		LblSubtotal = new JLabel("Subtotal: $0.0");
+		LblSubtotal.setFont(new Font("Tahoma", Font.BOLD, 16));
+		LblSubtotal.setBounds(490, 479, 170, 19);
+		contentPane.add(LblSubtotal);
 		
 		TbProductosDsp.getColumnModel().getColumn(0).setMinWidth(0);
 		TbProductosDsp.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -578,6 +617,6 @@ public class MenuVentas extends JFrame {
 
 		}
 
-		LblTotal.setText("Total: $" + total);
+		LblSubtotal.setText("Total: $" + total);
 	}
 }
