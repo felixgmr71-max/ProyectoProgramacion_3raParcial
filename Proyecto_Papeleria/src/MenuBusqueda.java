@@ -43,6 +43,7 @@ public class MenuBusqueda extends JFrame {
 			public void run() {
 				try {
 					MenuBusqueda frame = new MenuBusqueda();
+					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -55,6 +56,7 @@ public class MenuBusqueda extends JFrame {
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 720, 420);
+		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -201,6 +203,23 @@ public class MenuBusqueda extends JFrame {
 
 		btnEliminar.setBounds(95, 235, 110, 23);
 		contentPane.add(btnEliminar);
+		
+		/*Programamos la tecla ESC para que al presionarla regrese al menú principal*/
+		
+		//1.Definimos que la tecla a escuchar es el ESC
+		javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0);
+				
+		//2.Le decimos a la ventana que escuche esa tecla siempre que esté activa
+		this.getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(esc, "accionVolver");
+				
+		//3.Le decimos qué hacer cuando detecte la pulsación
+		this.getRootPane().getActionMap().put("accionVolver", new javax.swing.AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+						
+				BtnSalir.doClick(); //Simula un clic en tu botón de salir
+				
+			}
+		});
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(330, 35, 350, 280);
