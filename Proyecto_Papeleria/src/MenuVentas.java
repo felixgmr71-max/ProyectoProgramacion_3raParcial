@@ -16,27 +16,36 @@ import javax.swing.JOptionPane;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
 import javax.swing.table.DefaultTableModel;
 
 public class MenuVentas extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+
+	// Panel principal
 	private JPanel contentPane;
+
+	// Caja de texto para buscar productos
 	private JTextField TxtProductos;
+
+	// Tablas
 	private JTable TbProductosDsp;
 	private JTable TbCarritoCompras;
+
+	// Label para mostrar subtotal
 	private JLabel LblSubtotal;
-	
-	//Variable para agregar filas y columnas a la tabla 
+
+	// Modelo de tabla de productos
 	DefaultTableModel modelo = new DefaultTableModel();
-	
+
+	// Modelo de tabla del carrito
 	DefaultTableModel modeloCarrito = new DefaultTableModel();
 
-	//Variables para conectarnos a la base de datos
-	Connection Conexion = null; 
+	// Variables para conexión SQL
+	Connection Conexion = null;
 	PreparedStatement ps = null;
 	ResultSet rs = null;
-	
 	
 	/**
 	 * Launch the application.
@@ -45,10 +54,13 @@ public class MenuVentas extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					
 					MenuVentas frame = new MenuVentas();
 					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
+					
 				} catch (Exception e) {
+					
 					e.printStackTrace();
 				}
 			}
@@ -61,11 +73,14 @@ public class MenuVentas extends JFrame {
 	public MenuVentas() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 833, 628);
-		setLocationRelativeTo(null);
+		setLocationRelativeTo(null); //Centra la pantalla
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		setResizable(false); // Evita cambiar tamaño o maximizar
+
 		
 		JLabel lblVentas = new JLabel("Ventas");
 		lblVentas.setBounds(296, 10, 113, 38);
@@ -134,7 +149,18 @@ public class MenuVentas extends JFrame {
 		//Le asignamos el modelo a la tabla
 		TbProductosDsp.setModel(modelo);
 		
+		// Evita la edicion de la tabla
 		TbProductosDsp.setDefaultEditor(Object.class, null);
+		
+		TbProductosDsp.getColumnModel().getColumn(0).setMinWidth(0);
+		TbProductosDsp.getColumnModel().getColumn(0).setMaxWidth(0);
+		TbProductosDsp.getColumnModel().getColumn(0).setWidth(0);
+		
+		// Evita mover columnas
+		TbProductosDsp.getTableHeader().setReorderingAllowed(false);
+
+		// Evita cambiar tamaño columnas
+		TbProductosDsp.getTableHeader().setResizingAllowed(false);
 		
 		JLabel lblCarritoDeCompras = new JLabel("CARRITO DE COMPRAS");
 		lblCarritoDeCompras.setFont(new Font("Tahoma", Font.BOLD, 16));
@@ -147,6 +173,8 @@ public class MenuVentas extends JFrame {
 		
 		TbCarritoCompras = new JTable();
 		
+		scrollPane_Compras.setViewportView(TbCarritoCompras);
+		
 		// Columnas de la tabla del carrito
 		modeloCarrito.addColumn("ID");
 		modeloCarrito.addColumn("Producto");
@@ -157,7 +185,9 @@ public class MenuVentas extends JFrame {
 		// Asignamos el modelo a la tabla
 		TbCarritoCompras.setModel(modeloCarrito);
 		
+		// Evita la edicion de la tabla
 		TbCarritoCompras.setDefaultEditor(Object.class, null);
+		
 		// Ocultamos la columna ID
 		TbCarritoCompras.getColumnModel().getColumn(0).setMinWidth(0);
 		TbCarritoCompras.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -166,7 +196,12 @@ public class MenuVentas extends JFrame {
 		// Hacemos que la tabla no se pueda editar
 		TbCarritoCompras.setDefaultEditor(Object.class, null);
 		
-		scrollPane_Compras.setViewportView(TbCarritoCompras);
+		// Evita mover columnas
+		TbCarritoCompras.getTableHeader().setReorderingAllowed(false);
+
+		// Evita cambiar tamaño columnas
+		TbCarritoCompras.getTableHeader().setResizingAllowed(false);
+		
 		
 		JButton BtnEliminar = new JButton("Eliminar Producto");
 		BtnEliminar.addActionListener(new ActionListener() {
@@ -176,18 +211,15 @@ public class MenuVentas extends JFrame {
 				int fila = TbCarritoCompras.getSelectedRow();
 
 				if (fila == -1) {
-					JOptionPane.showMessageDialog(
-							null,
-							"Seleccione el producto que desea eliminar");
+					JOptionPane.showMessageDialog(null,"Seleccione el producto que desea eliminar",
+							"Eliminar producto",JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 				 
 				// Recuperamos datos
-				int idProducto = Integer.parseInt(
-						TbCarritoCompras.getValueAt(fila, 0).toString());
+				int idProducto = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 0).toString());
 
-				int cantidad = Integer.parseInt(
-						TbCarritoCompras.getValueAt(fila, 3).toString());
+				int cantidad = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 3).toString());
 				
 				try {
 
@@ -195,8 +227,7 @@ public class MenuVentas extends JFrame {
 					Connection cn = con.conectar();
 					
 					// Regresamos el stock
-					String sql = "UPDATE Productos SET stock = stock + ? "
-							   + "WHERE id_producto = ?";
+					String sql = "UPDATE Productos SET stock = stock + ? " + "WHERE id_producto = ?";
 					
 					PreparedStatement ps = cn.prepareStatement(sql);
 					
@@ -210,9 +241,8 @@ public class MenuVentas extends JFrame {
 
 				} catch (Exception e1) {
 
-					JOptionPane.showMessageDialog(
-							null,
-							"Error al devolver stock: " + e1.getMessage());
+					JOptionPane.showMessageDialog(null,"Error al devolver stock: " 
+					+ e1.getMessage(),"Error Stock",JOptionPane.ERROR_MESSAGE);
 				}
 				
 				// Eliminamos del carrito
@@ -224,10 +254,8 @@ public class MenuVentas extends JFrame {
 				// Actualizamos total
 				calcularTotal();
 				
-				// Mensaje de éxito
-				JOptionPane.showMessageDialog(
-						null,
-						"Producto eliminado correctamente.");
+				JOptionPane.showMessageDialog(null,"Producto eliminado correctamente",
+						"Exito",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		BtnEliminar.setBounds(437, 406, 141, 42);
@@ -239,20 +267,26 @@ public class MenuVentas extends JFrame {
 				
 				int fila = TbCarritoCompras.getSelectedRow();
 
-				if (fila == -1) {
+				if (fila==-1) {
 
-					JOptionPane.showMessageDialog(
-							null,
-							"Seleccione un producto del carrito.");
-
+					JOptionPane.showMessageDialog(null,"Seleccione un producto del carrito",
+							"Aviso",JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 
-				String texto = JOptionPane.showInputDialog(
-						null,
-						"Ingrese la nueva cantidad:");
+				String texto = JOptionPane.showInputDialog(null,"Ingrese la nueva cantidad: ",
+						"Modificación",JOptionPane.INFORMATION_MESSAGE);
 
-				if (texto == null) {
+				if (texto==null) {
+					return;
+				}
+
+				// Validamos números
+				if (!texto.matches("\\d+")) {
+
+					JOptionPane.showMessageDialog(null,"Ingrese solamente números",
+							"Error",JOptionPane.ERROR_MESSAGE);
+
 					return;
 				}
 
@@ -260,40 +294,34 @@ public class MenuVentas extends JFrame {
 
 				if (nuevaCantidad <= 0) {
 
-					JOptionPane.showMessageDialog(
-							null,
-							"La cantidad debe ser mayor a cero.");
+					JOptionPane.showMessageDialog(null,"La cantidad debe ser mayor a 0",
+							"Aviso",JOptionPane.WARNING_MESSAGE);
 
 					return;
 				}
 
-				int idProducto = Integer.parseInt(
-						TbCarritoCompras.getValueAt(fila, 0).toString());
+				int idProducto = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 0).toString());
 
-				int cantidadAnterior = Integer.parseInt(
-						TbCarritoCompras.getValueAt(fila, 3).toString());
+				int cantidadAnterior = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 3).toString());
 
-				double precio = Double.parseDouble(
-						TbCarritoCompras.getValueAt(fila, 2).toString());
+				double precio = Double.parseDouble(TbCarritoCompras.getValueAt(fila, 2).toString());
 
-				int diferencia = nuevaCantidad - cantidadAnterior;
+				int diferencia =nuevaCantidad - cantidadAnterior;
 
 				try {
 
 					Conexion con = new Conexion();
+
 					Connection cn = con.conectar();
 
-					// Consultamos stock actual
-					String sqlStock =
-							"SELECT stock FROM Productos "
-						  + "WHERE id_producto = ?";
+					// Consultamos stock
+					String sqlStock ="SELECT stock " + "FROM Productos " + "WHERE id_producto = ?";
 
-					PreparedStatement psStock =
-							cn.prepareStatement(sqlStock);
+					PreparedStatement psStock =cn.prepareStatement(sqlStock);
 
 					psStock.setInt(1, idProducto);
 
-					ResultSet rs = psStock.executeQuery();
+					ResultSet rs =psStock.executeQuery();
 
 					int stockActual = 0;
 
@@ -305,9 +333,8 @@ public class MenuVentas extends JFrame {
 					// Validamos stock
 					if (diferencia > stockActual) {
 
-						JOptionPane.showMessageDialog(
-								null,
-								"No hay suficiente stock.");
+						JOptionPane.showMessageDialog(null,"No hay suficiente stock",
+								"Error con el Stock",JOptionPane.ERROR_MESSAGE);
 
 						rs.close();
 						psStock.close();
@@ -317,13 +344,9 @@ public class MenuVentas extends JFrame {
 					}
 
 					// Actualizamos stock
-					String sqlUpdate =
-							"UPDATE Productos "
-						  + "SET stock = stock - ? "
-						  + "WHERE id_producto = ?";
+					String sqlUpdate ="UPDATE Productos " + "SET stock = stock - ? " + "WHERE id_producto = ?";
 
-					PreparedStatement psUpdate =
-							cn.prepareStatement(sqlUpdate);
+					PreparedStatement psUpdate =cn.prepareStatement(sqlUpdate);
 
 					psUpdate.setInt(1, diferencia);
 					psUpdate.setInt(2, idProducto);
@@ -337,24 +360,26 @@ public class MenuVentas extends JFrame {
 
 				} catch (Exception ex) {
 
-					JOptionPane.showMessageDialog(
-							null,
-							"Error: " + ex.getMessage());
-
+					JOptionPane.showMessageDialog(null,"Error al modificar",
+							"Error",JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
+				// Nuevo subtotal
 				double subtotal = precio * nuevaCantidad;
 
+				// Actualizamos tabla
 				modeloCarrito.setValueAt(nuevaCantidad, fila, 3);
+
 				modeloCarrito.setValueAt(subtotal, fila, 4);
 
+				// Refrescamos
 				mostrarProductos();
+
 				calcularTotal();
 
-				JOptionPane.showMessageDialog(
-						null,
-						"Cantidad modificada correctamente.");
+				JOptionPane.showMessageDialog(null,"Cantidad modificada correctamente",
+						"Modificación exitosa",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 			
@@ -368,71 +393,97 @@ public class MenuVentas extends JFrame {
 				
 				// Verificamos que haya un producto seleccionado
 				int fila = TbProductosDsp.getSelectedRow();
-				
-				if (fila == -1) {
-					JOptionPane.showMessageDialog(null,
-							"Seleccione un producto de la tabla.");
+
+				if (fila==-1) {
+
+					JOptionPane.showMessageDialog(null,"Seleccione un producto de la tabla",
+							"Aviso",JOptionPane.WARNING_MESSAGE);
+
 					return;
 				}
-				
-				// Pedimos la cantidad al usuario
-				String cantidadTexto = JOptionPane.showInputDialog(
-						null,
-						"Ingrese la cantidad:");
-				
-				// Si cancela, no hacemos nada
+
+				// Pedimos la cantidad
+				String cantidadTexto = JOptionPane.showInputDialog(null,"Ingrese la cantidad:",
+						"Cantidad de producto",JOptionPane.INFORMATION_MESSAGE);
+
+				// Si cancela
 				if (cantidadTexto == null) {
 					return;
 				}
-				
-				int cantidad = Integer.parseInt(cantidadTexto);
-				
-				// Obtenemos los datos del producto seleccionado
-				int idProducto = Integer.parseInt(
-						TbProductosDsp.getValueAt(fila, 0).toString());
-				
+
+				// Quitamos espacios
+				cantidadTexto = cantidadTexto.trim();
+
+				// Validamos vacío
+				if (cantidadTexto.isEmpty()) {
+
+					JOptionPane.showMessageDialog(null,"No deje el campo vacío",
+							"Error",JOptionPane.ERROR_MESSAGE);
+
+					return;
+				}
+
+				// Validamos que sea número
+				int cantidad;
+
+				try {
+
+					cantidad = Integer.parseInt(cantidadTexto);
+
+				} catch (NumberFormatException ex) {
+
+					JOptionPane.showMessageDialog(null,"Ingrese solamente números",
+							"Error",JOptionPane.ERROR_MESSAGE);
+
+					return;
+				}
+
+				// Obtenemos datos del producto
+				int idProducto = Integer.parseInt(TbProductosDsp.getValueAt(fila, 0).toString());
+
 				String nombre = TbProductosDsp.getValueAt(fila, 1).toString();
-				
-				double precio = Double.parseDouble(
-						TbProductosDsp.getValueAt(fila, 2).toString());
-				
-				int stock = Integer.parseInt(
-						TbProductosDsp.getValueAt(fila, 3).toString());
-				
-				// Verificamos que la cantidad sea válida
-				if (cantidad <= 0) {
-					JOptionPane.showMessageDialog(null,
-							"La cantidad debe ser mayor a cero.");
+
+				double precio = Double.parseDouble(TbProductosDsp.getValueAt(fila, 2).toString());
+
+				int stock = Integer.parseInt(TbProductosDsp.getValueAt(fila, 3).toString());
+
+				// Validamos cantidad
+				if (cantidad<=0) {
+
+					JOptionPane.showMessageDialog(null,"La cantidad debe ser mayor a cero",
+							"Error",JOptionPane.ERROR_MESSAGE);
+
 					return;
 				}
-				
-				if (cantidad > stock) {
-					JOptionPane.showMessageDialog(null,
-							"No hay suficiente stock.");
+
+				// Validamos stock
+				if (cantidad>stock) {
+
+					JOptionPane.showMessageDialog(null,"No hay suficiente stock",
+							"Error con el Stock",JOptionPane.ERROR_MESSAGE);
+
 					return;
 				}
-				
-				// Calculamos el subtotal
+
+				// Calculamos subtotal
 				double subtotal = precio * cantidad;
-				
-				// Creamos la fila
+
+				// Creamos fila
 				Object datos[] = new Object[5];
-				
+
 				datos[0] = idProducto;
 				datos[1] = nombre;
 				datos[2] = precio;
 				datos[3] = cantidad;
 				datos[4] = subtotal;
-				
+
 				try {
 
 					Conexion con = new Conexion();
 					Connection cn = con.conectar();
 
-					// Bajamos el stock
-					String sql = "UPDATE Productos "
-							   + "SET stock = stock - ? "
-							   + "WHERE id_producto = ?";
+					// Bajamos stock
+					String sql = "UPDATE Productos " + "SET stock = stock - ? " + "WHERE id_producto = ?";
 
 					PreparedStatement ps = cn.prepareStatement(sql);
 
@@ -446,24 +497,25 @@ public class MenuVentas extends JFrame {
 
 				} catch (Exception ex) {
 
-					JOptionPane.showMessageDialog(
-							null,
-							"Error al actualizar stock: "
-							+ ex.getMessage());
-
+					JOptionPane.showMessageDialog(null,"Error al actualizar stock: " + ex.getMessage(),
+							"Error",JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
-				// Agregamos la fila al carrito
+				// Agregamos al carrito
 				modeloCarrito.addRow(datos);
 
 				// Actualizamos tabla
 				mostrarProductos();
 
-				// Actualizamos total
+				// Actualizamos subtotal
 				calcularTotal();
+
+				JOptionPane.showMessageDialog(null,"Producto agregado correctamente",
+						"Éxito",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
+
 		BtnAgregar.setBounds(236, 443, 136, 44);
 		contentPane.add(BtnAgregar);
 		
@@ -471,17 +523,17 @@ public class MenuVentas extends JFrame {
 		BtnVenta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-
+					//Verificacion del carrito, si hay productos
 				if (modeloCarrito.getRowCount() == 0) {
-					JOptionPane.showMessageDialog(
-							null,
-							"No hay productos en el carrito.");
+					 	 
+					JOptionPane.showMessageDialog(null,"No hay productos en el carrito","Aviso",JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 
 				// Variables
 				int totalProductos = 0;
-				double totalVenta = 0;
+				
+				double subtotalVenta = 0;
 
 				// Recorremos el carrito
 				for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
@@ -493,21 +545,28 @@ public class MenuVentas extends JFrame {
 							modeloCarrito.getValueAt(i, 4).toString());
 
 					totalProductos += cantidad;
-					totalVenta += subtotal;
+					
+					subtotalVenta += subtotal;
 				}
 
-				// Mostramos resumen
-				JOptionPane.showMessageDialog(
-						null,
-						"Venta realizada correctamente."
-						+ "\n\nProductos vendidos: " + totalProductos
-						+ "\nTotal pagado: $" + totalVenta);
+				double iva = subtotalVenta * 0.16;
+				
+				double totalFinal = subtotalVenta + iva;
 
-				// Limpiamos carrito
+				
+				JOptionPane.showMessageDialog(null,"VENTA REALIZADA CORRECTAMENTE"
+						+ "\n\nProductos vendidos: " + totalProductos
+						+ "\nSubtotal: $" + String.format("%.2f", subtotalVenta)
+						+ "\n+ IVA (16%): $" + String.format("%.2f", iva)
+						+ "\nTOTAL: $" + String.format("%.2f", totalFinal),
+						"¡VENTA EXITOSA!",JOptionPane.INFORMATION_MESSAGE);
+				
+				// Limpia el carrito
 				modeloCarrito.setRowCount(0);
 
-				// Actualizamos total
+				// Actualiza el total
 				calcularTotal();
+		
 			}
 		});
 		
@@ -519,16 +578,13 @@ public class MenuVentas extends JFrame {
 		LblSubtotal.setBounds(490, 479, 170, 19);
 		contentPane.add(LblSubtotal);
 		
-		TbProductosDsp.getColumnModel().getColumn(0).setMinWidth(0);
-		TbProductosDsp.getColumnModel().getColumn(0).setMaxWidth(0);
-		TbProductosDsp.getColumnModel().getColumn(0).setWidth(0);
-		
 		// Cargamos los productos al abrir la ventana
 		mostrarProductos();
 		
-		//public void calcularTotal() {
-
-		
+		TbProductosDsp.getColumnModel().getColumn(0).setMinWidth(0);
+		TbProductosDsp.getColumnModel().getColumn(0).setMaxWidth(0);
+		TbProductosDsp.getColumnModel().getColumn(0).setWidth(0);
+			
 		/*Programamos la tecla ESC para que al presionarla regrese al menú principal*/
 		
 		//1.Definimos que la tecla a escuchar es el ESC
@@ -551,7 +607,7 @@ public class MenuVentas extends JFrame {
 
 	public void mostrarProductos() {
 	
-		String Valores[] = new String[4];
+		String Valores[] =new String[4];
 		String CadSQL = "";
 	
 		// Limpiamos la tabla para evitar duplicados
@@ -565,16 +621,19 @@ public class MenuVentas extends JFrame {
 				// Consulta SQL para obtener los productos
 				CadSQL = "SELECT id_producto, nombre, precio_venta, stock FROM Productos";
 
+				// Si escribió algo
 			if (TxtProductos.getText().trim().length() > 0)
 			{
 				String texto = TxtProductos.getText();
-
+				
+				//Funcion para los acentos, quitamos acentos
 			    texto = texto.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o")
 			                 .replace("ú", "u").replace("Á", "A") .replace("É", "E").replace("Í", "I")
 			                 .replace("Ó", "O").replace("Ú", "U");
-
+			    
+			    //Búsqueda
 			    CadSQL += " WHERE " + "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nombre, " +
-			              "'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u')" +" LIKE '%" + texto + "%'";
+			              "'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u')" +" LIKE '%" +texto+ "%'";
 			}
 			
 			// Prepara la consulta
@@ -602,7 +661,8 @@ public class MenuVentas extends JFrame {
 
 			} catch (Exception e1) {
 		
-				JOptionPane.showMessageDialog(null,"Error al mostrar productos: " + e1.toString());
+				JOptionPane.showMessageDialog(null,"Error al mostrar productos: " + e1.toString(),
+				"Error de productos",JOptionPane.ERROR_MESSAGE);
 		}
 	
 	}
@@ -611,12 +671,13 @@ public class MenuVentas extends JFrame {
 		
 		double total = 0;
 
-		for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
+		for (int i=0; i<modeloCarrito.getRowCount(); i++) {
 
 			total += Double.parseDouble(modeloCarrito.getValueAt(i, 4).toString());
 
 		}
 
+		//Mostramos el subtotal
 		LblSubtotal.setText("Total: $" + total);
 	}
 }
