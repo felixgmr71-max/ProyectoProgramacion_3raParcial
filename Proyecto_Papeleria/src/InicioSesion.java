@@ -52,15 +52,21 @@ public class InicioSesion extends JFrame {
 	 * Create the frame.
 	 */
 	public InicioSesion() {
+		setTitle("Papelería");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
+		contentPane.setBackground(new Color(0, 64, 128));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
+		// Hacemos que el panel principal pueda recibir el foco inicial
+		contentPane.setFocusable(true);
+		
 		JLabel lblNewLabel = new JLabel("Inicio de Sesión");
+		lblNewLabel.setForeground(new Color(255, 255, 255));
 		lblNewLabel.setFont(new Font("Times New Roman", Font.BOLD | Font.ITALIC, 35));
 		lblNewLabel.setBounds(95, 10, 253, 45);
 		contentPane.add(lblNewLabel);
@@ -72,15 +78,8 @@ public class InicioSesion extends JFrame {
 		txtUsuario.setBounds(64, 65, 310, 27);
 		contentPane.add(txtUsuario);
 		txtUsuario.setColumns(10);
-		txtUsuario.setFocusable(false);
 		
-		txtUsuario.addMouseListener(new java.awt.event.MouseAdapter() {
-		    public void mouseClicked(java.awt.event.MouseEvent evt) {
-			    	txtUsuario.setFocusable(true);
-			    	txtUsuario.requestFocusInWindow();
-		    }
-		});
-		
+		// Eventos de foco para txtUsuario
 		txtUsuario.addFocusListener(new FocusAdapter() {
 		    @Override
 		    public void focusGained(FocusEvent e) {
@@ -102,21 +101,13 @@ public class InicioSesion extends JFrame {
 		passwordField = new JPasswordField();
 		passwordField.setFont(new Font("Garamond", Font.PLAIN, 25));
 		passwordField.setBounds(64, 116, 310, 27);
-		contentPane.add(passwordField);
 		String placeholder = "Contraseña...";
 		passwordField.setForeground(new Color(192, 192, 192));
 		passwordField.setText(placeholder);
 		passwordField.setEchoChar((char) 0);
 		contentPane.add(passwordField);
-		passwordField.setFocusable(false);
 		
-		passwordField.addMouseListener(new java.awt.event.MouseAdapter() {
-		    public void mouseClicked(java.awt.event.MouseEvent evt) {
-		    	passwordField.setFocusable(true);
-		    	passwordField.requestFocusInWindow();
-		    }
-		});
-		
+		// Eventos de foco para passwordField
 		passwordField.addFocusListener(new FocusAdapter() {
 		    @Override
 		    public void focusGained(FocusEvent e) {
@@ -142,20 +133,20 @@ public class InicioSesion extends JFrame {
 		});
 		
 		JButton btnIngresar = new JButton("Ingresar");
+		btnIngresar.setBackground(new Color(240, 240, 240));
+		btnIngresar.setForeground(new Color(0, 128, 192));
+		btnIngresar.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnIngresar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				// 1. Obtener lo que el usuario escribió
 				String usr = txtUsuario.getText();
 				String pass = new String(passwordField.getPassword());
 				
-				// 2. Validar que no sean los placeholder de ejemplo
 				if (usr.equals("Usuario...") || pass.equals("Contraseña...") || usr.isEmpty() || pass.isEmpty()) {
 					javax.swing.JOptionPane.showMessageDialog(null, "Por favor, llene todos los campos.");
-					return; // Detiene la ejecución aquí
+					return;
 				}
 				
-				// 3. Consultar la BD
 				Conexion con = new Conexion();
 				String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
 				
@@ -167,15 +158,13 @@ public class InicioSesion extends JFrame {
 					
 					java.sql.ResultSet rs = ps.executeQuery();
 					
-					// Si rs.next() es true, significa que encontró al usuario
 					if (rs.next()) {
 						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
 						
-						// Al presionar iniciar sesion nos manda a el menú principal
 						MenuPrincipal menu = new MenuPrincipal();
 						menu.setVisible(true);
 						
-						dispose(); // Cerrar ventana de Inicio de Sesion
+						dispose(); 
 					} else {
 						javax.swing.JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
 					}
@@ -185,11 +174,17 @@ public class InicioSesion extends JFrame {
 				}
 			}
 		});
-		btnIngresar.setBounds(183, 174, 84, 20);
+		btnIngresar.setBounds(148, 167, 140, 45);
 		contentPane.add(btnIngresar);
 		
-		//Esta linea hace que el botón ingresar se presione oprimiendo Enter
 		this.getRootPane().setDefaultButton(btnIngresar);
 
+		// Evitar que txtUsuario gane el foco al iniciar y borre el placeholder
+		// Swing invocará esto justo después de que la ventana sea visible
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				contentPane.requestFocusInWindow();
+			}
+		});
 	}
 }

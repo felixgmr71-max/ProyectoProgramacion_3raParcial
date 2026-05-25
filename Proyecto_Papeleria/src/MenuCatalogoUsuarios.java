@@ -330,7 +330,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 	    modelo.addColumn("Rol");
 	    
 	    table.setModel(modelo);
-	    modelo.setRowCount(0);
+	    modelo.setRowCount(0); //limpiar la tabla
 
 	    Conexion conDB = new Conexion();
 	    conDB.inicializarBaseDeDatos();
@@ -356,6 +356,10 @@ public class MenuCatalogoUsuarios extends JFrame {
 	    } catch (SQLException e) {
 	        JOptionPane.showMessageDialog(null, "Error al cargar datos: " + e.getMessage());
 	    }
+	    //propiedades para no mostrar el id en la tabla
+	    table.getColumnModel().getColumn(0).setMinWidth(0);
+	    table.getColumnModel().getColumn(0).setMaxWidth(0);
+	    table.getColumnModel().getColumn(0).setPreferredWidth(0);
     }
 }
 	
