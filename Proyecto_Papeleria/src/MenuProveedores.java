@@ -12,16 +12,19 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.text.MaskFormatter;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
 import java.awt.GridLayout;
 
 public class MenuProveedores extends JFrame {
@@ -32,15 +35,18 @@ public class MenuProveedores extends JFrame {
 
 	private JTextField txtEmpresa;
 	private JTextField txtContacto;
-	private JTextField txtTelefono;
+	private JFormattedTextField txtTelefono; 
+	
+	private JButton btnAgregar;
+	private JButton btnModificar; 
+	private JButton btnEliminar;
 
 	DefaultTableModel modelo = new DefaultTableModel();
 
 	Connection conexion = null;
-	PreparedStatement ps = null; // variable que prepara la consulta SQL de forma segura
-	ResultSet rs = null; // Aquí se guarda todo lo que nos responde la base de datos (los resultados)
+	PreparedStatement ps = null; 
+	ResultSet rs = null; 
 
-	// Variable global para saber a qué proveedor le dimos clic. Inicia en 0.
 	int idProveedor = 0;
 
 	public static void main(String[] args) {
@@ -60,15 +66,15 @@ public class MenuProveedores extends JFrame {
 		setTitle("Proveedores");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 850, 500); 
-		setLocationRelativeTo(null); // Centra la ventana en la pantalla
+		setLocationRelativeTo(null); 
 		
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0)); // Usamos BorderLayout para dividir en Norte, Sur y Centro
+		contentPane.setLayout(new BorderLayout(0, 0)); 
 
-		//comenzamos por el panel norte o el de arriba
+		// Panel Norte
 		JPanel pnlNorte = new JPanel();
 		pnlNorte.setBackground(new Color(0, 64, 128)); 
 		contentPane.add(pnlNorte, BorderLayout.NORTH);
@@ -76,98 +82,175 @@ public class MenuProveedores extends JFrame {
 		JLabel lblTitulo = new JLabel("Directorio de Proveedores");
 		lblTitulo.setForeground(Color.WHITE);
 		lblTitulo.setFont(new Font("Century Gothic", Font.BOLD, 30));
-		lblTitulo.setBorder(new EmptyBorder(10, 0, 10, 0)); // Márgenes para que no se vea amontonado
+		lblTitulo.setBorder(new EmptyBorder(10, 0, 10, 0)); 
 		pnlNorte.add(lblTitulo);
 
-		//continuamos con el sur que es donde se ubican los botones
+		// Panel Sur (Botones)
 		JPanel pnlSur = new JPanel();
 		pnlSur.setBackground(new Color(0, 64, 128));
-		pnlSur.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 15)); // Centrados y con espacio entre ellos
+		pnlSur.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 15)); 
 		contentPane.add(pnlSur, BorderLayout.SOUTH);
 		
-		JButton btnAgregar = new JButton("Agregar");
+		btnAgregar = new JButton("Agregar");
 		btnAgregar.setForeground(new Color(0, 128, 192));
-		btnAgregar.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Pone la manita al pasar el mouse
+		btnAgregar.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
 		btnAgregar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				// --- VALIDACIÓN DE CAMPOS VACÍOS ---
+				if(txtEmpresa.getText().trim().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "El nombre de la empresa es obligatorio.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				if(txtContacto.getText().trim().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "El nombre del contacto es obligatorio.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				// Limpiamos los guiones y espacios de la máscara para contar cuántos números reales escribió
+				String telefonoLimpio = txtTelefono.getText().replace("-", "").replace("_", "").trim();
+				if(telefonoLimpio.length() < 10) {
+					JOptionPane.showMessageDialog(null, "El teléfono debe contener los 10 dígitos completos.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
+				// --- PROTECCIÓN: Evitamos el error de UNIQUE constraint ---
+				if(existeEmpresa(txtEmpresa.getText(), 0)) {
+					JOptionPane.showMessageDialog(null, "La empresa '" + txtEmpresa.getText() + "' ya está registrada.\nPor favor, ingrese un nombre diferente.", "EMPRESA DUPLICADA", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
 				try {
 					Conexion con = new Conexion();
 					conexion = con.conectar();
 
-					/* * ¿Qué significan los signo de interrogación(?)?
-					 * llamadas "Consultas Parametrizadas". 
-					 * previenen inyección sql, haciendolo más profesional jajajaja
-					 */
 					String sql = "INSERT INTO proveedores(nombre_empresa, contacto, telefono) VALUES(?,?,?)";
 					ps = conexion.prepareStatement(sql);
 
-					// Aquí rellenamos los huecos (?), el 1, 2 y 3 corresponden al orden en el que aparecen arriba
 					ps.setString(1, txtEmpresa.getText());
 					ps.setString(2, txtContacto.getText());
 					ps.setString(3, txtTelefono.getText());
 
-					ps.executeUpdate(); // Ejecutamos la acción en la base de datos
+					ps.executeUpdate(); 
 
-					JOptionPane.showMessageDialog(null, "¡Proveedor agregado con éxito!");
-					limpiar(); // Dejamos los cuadritos en blanco
-					mostrarDatos(); // Refrescamos la tabla para ver los datos actualizados
+					JOptionPane.showMessageDialog(null, "¡Proveedor agregado con éxito!", "PROCESO EXITOSO", JOptionPane.INFORMATION_MESSAGE);
+					limpiar(); 
+					mostrarDatos(); 
 				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+					JOptionPane.showMessageDialog(null, "Ocurrió un error: " + ex.getMessage(), "ERROR DE BASE DE DATOS", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
 		pnlSur.add(btnAgregar);
 
-		JButton btnModificar = new JButton("Modificar");
+		btnModificar = new JButton("Modificar");
 		btnModificar.setForeground(new Color(0, 128, 192));
 		btnModificar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		btnModificar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Conexion con = new Conexion();
-					conexion = con.conectar();
+				
+				if(idProveedor == 0) {
+					JOptionPane.showMessageDialog(null, "Seleccione un proveedor de la tabla para modificarlo.", "ACCIÓN REQUERIDA", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 
-					// Igual aquí, actualizamos todo basándonos en el ID del proveedor 
-					String sql = "UPDATE proveedores SET nombre_empresa=?, contacto=?, telefono=? WHERE id_proveedor=?";
-					ps = conexion.prepareStatement(sql);
+				// PASO 1: Subir datos y BLOQUEAR botones
+				if(btnModificar.getText().equals("Modificar")) {
+					int fila = tabla.getSelectedRow();
+					txtEmpresa.setText(tabla.getValueAt(fila, 1).toString());
+					txtContacto.setText(tabla.getValueAt(fila, 2).toString());
+					txtTelefono.setText(tabla.getValueAt(fila, 3).toString());
+					
+					btnModificar.setText("Guardar Cambios");
+					
+					btnAgregar.setEnabled(false);
+					btnEliminar.setEnabled(false);
+					tabla.setEnabled(false); 
+				} 
+				// PASO 2: Guardar
+				else {
+					
+					// --- VALIDACIÓN DE CAMPOS VACÍOS (Misma que al agregar) ---
+					if(txtEmpresa.getText().trim().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "El nombre de la empresa es obligatorio.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					if(txtContacto.getText().trim().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "El nombre del contacto es obligatorio.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					String telefonoLimpio = txtTelefono.getText().replace("-", "").replace("_", "").trim();
+					if(telefonoLimpio.length() < 10) {
+						JOptionPane.showMessageDialog(null, "El teléfono debe contener los 10 dígitos completos.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
 
-					ps.setString(1, txtEmpresa.getText());
-					ps.setString(2, txtContacto.getText());
-					ps.setString(3, txtTelefono.getText());
-					ps.setInt(4, idProveedor); // Le pasamos el ID que guardamos al hacer clic en la tabla
+					// --- PROTECCIÓN: Evitamos el error de UNIQUE al modificar ---
+					if(existeEmpresa(txtEmpresa.getText(), idProveedor)) {
+						JOptionPane.showMessageDialog(null, "El nombre '" + txtEmpresa.getText() + "' ya pertenece a otro registro.\nPor favor, ingrese un nombre diferente.", "EMPRESA DUPLICADA", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
 
-					ps.executeUpdate();
-
-					JOptionPane.showMessageDialog(null, "¡Proveedor modificado exitosamente!");
-					limpiar();
-					mostrarDatos();
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+					try {
+						Conexion con = new Conexion();
+						conexion = con.conectar();
+	
+						String sql = "UPDATE proveedores SET nombre_empresa=?, contacto=?, telefono=? WHERE id_proveedor=?";
+						ps = conexion.prepareStatement(sql);
+	
+						ps.setString(1, txtEmpresa.getText());
+						ps.setString(2, txtContacto.getText());
+						ps.setString(3, txtTelefono.getText());
+						ps.setInt(4, idProveedor); 
+	
+						ps.executeUpdate();
+	
+						JOptionPane.showMessageDialog(null, "¡Proveedor modificado exitosamente!", "ACTUALIZACIÓN EXITOSA", JOptionPane.INFORMATION_MESSAGE);
+						limpiar();
+						mostrarDatos();
+					} catch (Exception ex) {
+						JOptionPane.showMessageDialog(null, "Ocurrió un error: " + ex.getMessage(), "ERROR DE BASE DE DATOS", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		});
 		pnlSur.add(btnModificar);
 
-		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar = new JButton("Eliminar");
 		btnEliminar.setForeground(new Color(0, 128, 192));
 		btnEliminar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Conexion con = new Conexion();
-					conexion = con.conectar();
+				
+				if(idProveedor == 0) {
+					JOptionPane.showMessageDialog(null, "Seleccione un proveedor de la tabla para eliminarlo.", "ACCIÓN REQUERIDA", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				int respuesta = JOptionPane.showConfirmDialog(
+						null,
+						"¿Está seguro que desea eliminar este proveedor por completo?\nEsta acción no se puede deshacer.",
+						"CONFIRMAR ELIMINACIÓN",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE);
 
-					// Borramos todo donde el ID coincida
-					String sql = "DELETE FROM proveedores WHERE id_proveedor=?";
-					ps = conexion.prepareStatement(sql);
-					ps.setInt(1, idProveedor);
-					ps.executeUpdate();
+				if (respuesta == JOptionPane.YES_OPTION) {
+					try {
+						Conexion con = new Conexion();
+						conexion = con.conectar();
 
-					JOptionPane.showMessageDialog(null, "Proveedor mandado a volar (eliminado)");
-					limpiar();
-					mostrarDatos();
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+						String sql = "DELETE FROM proveedores WHERE id_proveedor=?";
+						ps = conexion.prepareStatement(sql);
+						ps.setInt(1, idProveedor);
+						ps.executeUpdate();
+
+						JOptionPane.showMessageDialog(null, "El proveedor ha sido eliminado correctamente.", "ELIMINACIÓN EXITOSA", JOptionPane.INFORMATION_MESSAGE);
+						limpiar();
+						mostrarDatos();
+					} catch (Exception ex) {
+						JOptionPane.showMessageDialog(null, "Ocurrió un error: " + ex.getMessage(), "ERROR DE BASE DE DATOS", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		});
@@ -180,12 +263,12 @@ public class MenuProveedores extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				MenuPrincipal menuprincipal = new MenuPrincipal();
 				menuprincipal.setVisible(true);
-				dispose(); // cierra la ventana
+				dispose(); 
 			}
 		});
 		pnlSur.add(BtnSalir);
 
-		//panel principal
+		// Panel Centro
 		JPanel pnlCentro = new JPanel();
 		pnlCentro.setBackground(Color.WHITE);
 		pnlCentro.setLayout(new GridLayout(1, 2, 20, 0)); 
@@ -221,12 +304,29 @@ public class MenuProveedores extends JFrame {
 		txtContacto.setBounds(110, 110, 230, 25);
 		pnlFormulario.add(txtContacto);
 
+		txtContacto.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if (!Character.isLetter(c) && c != ' ' && c != KeyEvent.VK_BACK_SPACE) {
+					e.consume();
+				}
+			}
+		});
+
 		JLabel lblTelefono = new JLabel("Teléfono:");
 		lblTelefono.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblTelefono.setBounds(20, 160, 80, 20);
 		pnlFormulario.add(lblTelefono);
 
-		txtTelefono = new JTextField();
+		try {
+			MaskFormatter mascara = new MaskFormatter("###-###-####");
+			mascara.setPlaceholderCharacter('_'); 
+			txtTelefono = new JFormattedTextField(mascara);
+		} catch (java.text.ParseException e) {
+			e.printStackTrace();
+			txtTelefono = new JFormattedTextField(); 
+		}
 		txtTelefono.setBounds(110, 160, 230, 25);
 		pnlFormulario.add(txtTelefono);
 
@@ -244,7 +344,6 @@ public class MenuProveedores extends JFrame {
 
 		tabla = new JTable(modelo);
 		
-		// apartado estético
 		tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 		tabla.getTableHeader().setBackground(new Color(0, 91, 159)); 
 		tabla.getTableHeader().setForeground(Color.WHITE);
@@ -253,43 +352,55 @@ public class MenuProveedores extends JFrame {
 		tabla.setSelectionBackground(new Color(0, 64, 128));
 		tabla.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		tabla.setRowHeight(25);
-		tabla.setDefaultEditor(Object.class, null); // Esto evita que editen la tabla dándole doble clic
+		tabla.setDefaultEditor(Object.class, null); 
 		tabla.getTableHeader().setReorderingAllowed(false);
 		
 		scrollPane.setViewportView(tabla);
 
-		// --- EVENTO: CUANDO LE DAN CLIC A LA TABLA ---
 		tabla.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// Agarramos el número de la fila que el usuario seleccionó (empieza a contar desde 0)
 				int fila = tabla.getSelectedRow();
-
-				// Rescatamos el ID oculto de la columna 0 y lo guardamos en la variable global
-				idProveedor = Integer.parseInt(tabla.getValueAt(fila, 0).toString());
-
-				// Pegamos los datos de la tabla en las cajitas de texto
-				txtEmpresa.setText(tabla.getValueAt(fila, 1).toString());
-				txtContacto.setText(tabla.getValueAt(fila, 2).toString());
-				txtTelefono.setText(tabla.getValueAt(fila, 3).toString());
+				if(fila >= 0) {
+					idProveedor = Integer.parseInt(tabla.getValueAt(fila, 0).toString());
+				}
 			}
 		});
 
-		// Atajo: Que el botón ESC del teclado haga lo mismo que el botón Salir
 		javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0);
 		this.getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(esc, "accionVolver");
 		this.getRootPane().getActionMap().put("accionVolver", new javax.swing.AbstractAction() {
+			private static final long serialVersionUID = 1L;
 			public void actionPerformed(ActionEvent e) {
 				BtnSalir.doClick(); 
 			}
 		});
 
-		mostrarDatos(); // Al abrir la ventana, mandamos llamar a los proveedores de la BD
+		mostrarDatos(); 
+	}
+	
+	private boolean existeEmpresa(String nombreEmpresa, int idExcluir) {
+		boolean existe = false;
+		try {
+			Conexion con = new Conexion();
+			conexion = con.conectar();
+			
+			String sql = "SELECT id_proveedor FROM proveedores WHERE nombre_empresa = ? AND id_proveedor != ?";
+			ps = conexion.prepareStatement(sql);
+			ps.setString(1, nombreEmpresa.trim());
+			ps.setInt(2, idExcluir);
+			
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				existe = true; 
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return existe;
 	}
 
-	
 	public void mostrarDatos() {
-		// Borramos la tabla visualmente antes de cargar para que no se duplique la info
 		modelo.setRowCount(0);
 
 		try {
@@ -298,9 +409,8 @@ public class MenuProveedores extends JFrame {
 
 			String sql = "SELECT * FROM proveedores"; 
 			ps = conexion.prepareStatement(sql);
-			rs = ps.executeQuery(); // Ejecutamos la consulta y la guardamos en 'rs'
+			rs = ps.executeQuery(); 
 
-			// Mientras la base de datos nos siga escupiendo resultados, los metemos a la tabla
 			while (rs.next()) {
 				Object fila[] = new Object[4];
 				fila[0] = rs.getInt("id_proveedor");
@@ -312,7 +422,7 @@ public class MenuProveedores extends JFrame {
 			}
 
 		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(null, "Error al mostrar datos: " + ex.getMessage());
+			JOptionPane.showMessageDialog(null, "Error al mostrar datos: " + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
 		
 	    tabla.getColumnModel().getColumn(0).setMinWidth(0);
@@ -323,9 +433,16 @@ public class MenuProveedores extends JFrame {
 	public void limpiar() {
 		txtEmpresa.setText("");
 		txtContacto.setText("");
-		txtTelefono.setText("");
+		txtTelefono.setValue(null); 
 
-		// Reseteamos el ID a 0 para no arrastrar basura a la siguiente operación
 		idProveedor = 0;
+		
+		if(btnModificar != null && btnAgregar != null && btnEliminar != null && tabla != null) {
+			btnModificar.setText("Modificar");
+			btnAgregar.setEnabled(true);
+			btnEliminar.setEnabled(true);
+			tabla.setEnabled(true);
+			tabla.clearSelection(); 
+		}
 	}
 }

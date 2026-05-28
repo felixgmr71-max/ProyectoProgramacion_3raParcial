@@ -1,5 +1,4 @@
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -159,9 +158,14 @@ public class InicioSesion extends JFrame {
 					java.sql.ResultSet rs = ps.executeQuery();
 					
 					if (rs.next()) {
+						// === AQUÍ CAPTURAMOS EL ROL DE LA BASE DE DATOS ===
+						// Sustituye "rol" por el nombre real de tu columna en SQLite
+						String rolUsuario = rs.getString("rol_id"); 
+						
 						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
 						
-						MenuPrincipal menu = new MenuPrincipal();
+						// Le mandamos el rol como parámetro al constructor del menú
+						MenuPrincipal menu = new MenuPrincipal(rolUsuario);
 						menu.setVisible(true);
 						
 						dispose(); 
@@ -180,7 +184,6 @@ public class InicioSesion extends JFrame {
 		this.getRootPane().setDefaultButton(btnIngresar);
 
 		// Evitar que txtUsuario gane el foco al iniciar y borre el placeholder
-		// Swing invocará esto justo después de que la ventana sea visible
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				contentPane.requestFocusInWindow();

@@ -1,5 +1,4 @@
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -19,6 +18,16 @@ public class MenuPrincipal extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
+	private String rolActual;
+	
+	// DECLARAMOS LOS BOTONES AQUÍ ARRIBA PARA QUE TODOS LOS MÉTODOS LOS VEAN
+	private JButton BtnProveedores;
+	private JButton BtnCatalogoUsuarios;
+	private JButton BtnProductos;
+	private JButton BtnVentas;
+	private JButton BtnClientes;
+	
+	public static String rolGlobal = "1";
 
 	/**
 	 * Launch the application.
@@ -27,7 +36,7 @@ public class MenuPrincipal extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MenuPrincipal frame = new MenuPrincipal();
+					MenuPrincipal frame = new MenuPrincipal("Admin");
 					frame.setLocationRelativeTo(null); 
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -36,11 +45,18 @@ public class MenuPrincipal extends JFrame {
 			}
 		});
 	}
+	
 
 	/**
 	 * Create the frame.
 	 */
 	public MenuPrincipal() {
+		this(rolGlobal); // Esto llama al constructor de abajo usando el rol guardado
+	}
+	
+	public MenuPrincipal(String rol) {
+		rolGlobal = rol;
+		this.rolActual = rol; // Guardamos el rol que nos mandó el login
 		setTitle("Menú Principal");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 690, 425);
@@ -54,47 +70,41 @@ public class MenuPrincipal extends JFrame {
 		contentPane.add(panel);
 		panel.setLayout(new GridLayout(3, 1, 0, 0));
 		
-		JButton BtnProductos = new JButton("Productos");
+		BtnProductos = new JButton("Productos");
 		BtnProductos.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		BtnProductos.setForeground(new Color(0, 128, 192));
 		panel.add(BtnProductos);
 		BtnProductos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Nos lleva a ventana productos
 				MenuProductos menuprod = new MenuProductos();
 				menuprod.setVisible(true);
-				
-				dispose(); //Cerrar ventana
+				dispose();
 			}
 		});
 		BtnProductos.setFont(new Font("Century Gothic", Font.BOLD, 20));
 		
-		JButton BtnVentas = new JButton("Ventas");
+		BtnVentas = new JButton("Ventas");
 		BtnVentas.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		BtnVentas.setForeground(new Color(0, 128, 192));
 		panel.add(BtnVentas);
 		BtnVentas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Nos lleva a ventana Ventas
 				MenuVentas menuvent = new MenuVentas();
 				menuvent.setVisible(true);
-				
-				dispose(); //Cerrar ventana
+				dispose(); 
 			}
 		});
 		BtnVentas.setFont(new Font("Century Gothic", Font.BOLD, 20));
 		
-		JButton BtnProveedores = new JButton("Proveedores");
+		BtnProveedores = new JButton("Proveedores");
 		BtnProveedores.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		BtnProveedores.setForeground(new Color(0, 128, 192));
 		panel.add(BtnProveedores);
 		BtnProveedores.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Nos lleva a ventana búsqueda
 				MenuProveedores menubusq = new MenuProveedores();
 				menubusq.setVisible(true);
-				
-				dispose(); //Cerrar ventana
+				dispose();
 			}
 		});
 		BtnProveedores.setFont(new Font("Century Gothic", Font.BOLD, 20));
@@ -103,35 +113,50 @@ public class MenuPrincipal extends JFrame {
 		contentPane.add(panel_1);
 		panel_1.setLayout(new GridLayout(2, 1, 0, 0));
 		
-		JButton BtnClientes = new JButton("Clientes");
+		BtnClientes = new JButton("Clientes");
 		BtnClientes.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		BtnClientes.setForeground(new Color(0, 128, 192));
 		panel_1.add(BtnClientes);
 		BtnClientes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Nos lleva a ventana clientes
 				MenuClientes menuclien = new MenuClientes();
 				menuclien.setVisible(true);
-				
-				dispose(); //Cerrar ventana
+				dispose(); 
 			}
 		});
 		BtnClientes.setFont(new Font("Century Gothic", Font.BOLD, 20));
 		
-		JButton BtnCatalogoUsuarios = new JButton("Cátalogo de Usuarios");
+		BtnCatalogoUsuarios = new JButton("Cátalogo de Usuarios");
 		BtnCatalogoUsuarios.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		BtnCatalogoUsuarios.setForeground(new Color(0, 128, 192));
 		panel_1.add(BtnCatalogoUsuarios);
 		BtnCatalogoUsuarios.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Nos lleva a ventana cátalogo de usuarios
 				MenuCatalogoUsuarios menucatalogo = new MenuCatalogoUsuarios();
 				menucatalogo.setVisible(true);
-				
-				dispose(); //Cerrar ventana
+				dispose(); 
 			}
 		});
 		BtnCatalogoUsuarios.setFont(new Font("Century Gothic", Font.BOLD, 20));
-
+		
+		aplicarPermisos();
 	}
+	
+	private void aplicarPermisos() {
+			
+			// Ya podemos comentar o borrar el chivato para que no salga el mensaje molesto
+			// javax.swing.JOptionPane.showMessageDialog(null, "El rol detectado es: [" + rolActual + "]");
+			
+			if (rolActual != null) {
+				// Limpiamos espacios basura
+				String rolLimpio = rolActual.trim();
+				
+				// ¡AQUÍ ESTÁ EL CAMBIO! Validamos si el rol es un "2"
+				if (rolLimpio.equals("2")) {
+					BtnCatalogoUsuarios.setEnabled(false);;
+					BtnProveedores.setEnabled(false);
+					BtnProductos.setEnabled(false);
+				}
+			}
+		}
 }

@@ -51,8 +51,10 @@ public class Conexion {
             String sqlClientes = "CREATE TABLE IF NOT EXISTS clientes ("
                     + "id_cliente INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + "nombre_completo TEXT NOT NULL, "
+                    + "direccion TEXT, "
                     + "telefono TEXT, "
-                    + "correo TEXT"
+                    + "correo TEXT, "
+                    + "fecha_registro"
                     + ");";
 
             String sqlVentas = "CREATE TABLE IF NOT EXISTS ventas ("
