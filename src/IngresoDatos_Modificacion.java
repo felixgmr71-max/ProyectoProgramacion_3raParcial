@@ -20,6 +20,9 @@ import java.awt.event.ActionEvent;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import javax.swing.SwingConstants;
+
+//
 
 public class IngresoDatos_Modificacion extends JDialog {
 
@@ -66,69 +69,86 @@ public class IngresoDatos_Modificacion extends JDialog {
 		{
 			txtCodigo = new JTextField();
 			txtCodigo.setToolTipText("En este campo podra ingresar el codigo de su producto");
-			txtCodigo.setBounds(122, 78, 185, 19);
+			txtCodigo.setBounds(104, 78, 203, 19);
 			contentPanel.add(txtCodigo);
 			txtCodigo.setColumns(10);
 		}
 		
 		JLabel LblCodigo = new JLabel("Código:");
 		LblCodigo.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		LblCodigo.setBounds(60, 80, 52, 17);
+		LblCodigo.setBounds(49, 80, 52, 17);
 		contentPanel.add(LblCodigo);
 		
 		JLabel LblNombre = new JLabel("Nombre:");
 		LblNombre.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		LblNombre.setBounds(60, 109, 52, 17);
+		LblNombre.setBounds(49, 107, 52, 17);
 		contentPanel.add(LblNombre);
 		
 		txtNombre = new JTextField();
-		txtNombre.setToolTipText("En este campo podra ingresar el codigo de su producto");
+		txtNombre.setToolTipText("En este campo podra ingresar el nombre de su producto");
 		txtNombre.setColumns(10);
-		txtNombre.setBounds(122, 107, 185, 19);
+		txtNombre.setBounds(114, 107, 193, 19);
 		contentPanel.add(txtNombre);
 		
 		txtPrecioCompra = new JTextField();
 		txtPrecioCompra.addKeyListener(new KeyAdapter() {
-			@Override
+			
+			@Override//Esto nos ayuda a indicarle que el método que estás escribiendo abajo está sobrescribiendo un método que ya existe en una clase padre (herencia) o en una interfaz.
+
 			public void keyTyped(KeyEvent e) {
 				
 				// Obtiene el caracter que se acaba de ingresar
 			    char c = e.getKeyChar();
 
-			    // Si el caracter es un número 
-			    if (!Character.isDigit(c)) {
+			    //Si el caracter es un número o un punto
+			    if (!Character.isDigit(c) && c != '.') {
+			    	
 			        e.consume(); //El caracter no se escribe
 			    }
+			    
+			    //Si es un punto, revisamos si el texto ya tiene un punto antes
+				if (c == '.' && txtPrecioCompra.getText().contains(".")) {
+					
+					e.consume(); // Si ya existe un punto, bloquea el segundo
+				}
 				
 			}
 		});
-		txtPrecioCompra.setToolTipText("En este campo podra ingresar el codigo de su producto");
+		txtPrecioCompra.setToolTipText("En este campo podra ingresar el precio de compra de su producto");
 		txtPrecioCompra.setColumns(10);
-		txtPrecioCompra.setBounds(185, 138, 122, 19);
+		txtPrecioCompra.setBounds(170, 138, 137, 19);
 		contentPanel.add(txtPrecioCompra);
 		
 		JLabel lblPrecio = new JLabel(" Precio de compra:");
 		lblPrecio.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		lblPrecio.setBounds(60, 138, 115, 17);
+		lblPrecio.setBounds(49, 138, 115, 17);
 		contentPanel.add(lblPrecio);
 		
 		txtPrecioVenta = new JTextField();
 		txtPrecioVenta.addKeyListener(new KeyAdapter() {
-			@Override
+			
+			@Override//Esto nos ayuda a indicarle que el método que estás escribiendo abajo está sobrescribiendo un método que ya existe en una clase padre (herencia) o en una interfaz.
+			
 			public void keyTyped(KeyEvent e) {
 				
 				// Obtiene el caracter que se acaba de ingresar
 			    char c = e.getKeyChar();
 
-			    // Si el caracter es un número 
-			    if (!Character.isDigit(c)) {
-			        e.consume(); //El caracter no se escribe
-			    }
+			    // Si el caracter es un número o un punto
+			    if (!Character.isDigit(c) && c != '.') {
+					e.consume(); 
+				}
+			    
+			  //Si es un punto, revisamos si el texto ya tiene un punto antes
+				if (c == '.' && txtPrecioCompra.getText().contains(".")) {
+					
+					e.consume(); // Si ya existe un punto, bloquea el segundo
+				}
 			}
 		});
-		txtPrecioVenta.setToolTipText("En este campo podra ingresar el codigo de su producto");
+		txtPrecioVenta.setToolTipText("En este campo podra ingresar el precio de venta de su producto");
 		txtPrecioVenta.setColumns(10);
-		txtPrecioVenta.setBounds(162, 170, 145, 19);
+		txtPrecioVenta.setBounds(151, 170, 156, 19);
 		contentPanel.add(txtPrecioVenta);
 		
 		txtStock = new JTextField();
@@ -146,25 +166,26 @@ public class IngresoDatos_Modificacion extends JDialog {
 				
 			}
 		});
-		txtStock.setToolTipText("En este campo podra ingresar el codigo de su producto");
+		txtStock.setToolTipText("En este campo podra ingresar la cantidad de unidades que tienen de este producto");
 		txtStock.setColumns(10);
-		txtStock.setBounds(122, 199, 185, 19);
+		txtStock.setBounds(94, 199, 213, 19);
 		contentPanel.add(txtStock);
 		
 		JLabel lblStock = new JLabel("Stock:");
 		lblStock.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		lblStock.setBounds(60, 199, 52, 17);
+		lblStock.setBounds(49, 199, 52, 17);
 		contentPanel.add(lblStock);
 		
 		JLabel lblPrecioDeVenta = new JLabel("Precio de venta:");
 		lblPrecioDeVenta.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		lblPrecioDeVenta.setBounds(60, 170, 115, 17);
+		lblPrecioDeVenta.setBounds(49, 170, 115, 17);
 		contentPanel.add(lblPrecioDeVenta);
 		
 		
-		lblTitulo = new JLabel("AGREGAR PRODUCTO");
+		lblTitulo = new JLabel("Agregar Producto");
+		lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
 		lblTitulo.setFont(new Font("Century Gothic", Font.BOLD, 30));
-		lblTitulo.setBounds(10, 10, 336, 32);
+		lblTitulo.setBounds(10, 10, 336, 38);
 		contentPanel.add(lblTitulo);
 		{
 			JPanel buttonPane = new JPanel();
@@ -173,9 +194,24 @@ public class IngresoDatos_Modificacion extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("GUARDAR");
+				okButton.setToolTipText("Guardar los datos ingresados");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						
+				        // Verificamos si alguno de los campos está vacío
+				        if (txtCodigo.getText().trim().isEmpty() || txtNombre.getText().trim().isEmpty() || 
+				            txtPrecioCompra.getText().trim().isEmpty() ||  txtPrecioVenta.getText().trim().isEmpty() || 
+				            txtStock.getText().trim().isEmpty()) {
+				        	
+				        	// .trim: elimina los espacios en blanco al principio y al final del texto
+				        	//.isEmpty: Verifica si la cadena de texto resultante no tiene ningún carácter
+				            
+				            // Mostramos un mensaje de advertencia al usuario
+				            JOptionPane.showMessageDialog(null, 
+				                "Por favor, llena todos los campos antes de continuar.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
+				                
+				            return; //Detiene la ejecución del método aquí
+				        }
 						
 						try {
 
@@ -221,7 +257,7 @@ public class IngresoDatos_Modificacion extends JDialog {
 				            
 				            
 				            if(Registros >= 1) {
-				                JOptionPane.showMessageDialog(null, "¡El producto registrado!");
+				                JOptionPane.showMessageDialog(null, "¡El producto registrado!", "ACCIÓN COMPLETADA", JOptionPane.INFORMATION_MESSAGE);
 				                
 				                // Cerramos flujos y la ventana
 				                pstmt.close();
@@ -229,17 +265,17 @@ public class IngresoDatos_Modificacion extends JDialog {
 				                dispose(); 
 				                
 				            } else {
-				                JOptionPane.showMessageDialog(null, "No se pudo guardar, intentalo de nuevo.");
+				                JOptionPane.showMessageDialog(null, "No se pudo guardar, intentalo de nuevo.", "ERROR", JOptionPane.ERROR_MESSAGE);
 				            }
 				            
 				        } catch (NumberFormatException ex) {
 				        	
 				            // Este catch saltará automáticamente si el usuario mete letras en los campos numéricos
-				            JOptionPane.showMessageDialog(null, "Error, asegúrate de ingresar solo números en los Precios y Stock");
+				            JOptionPane.showMessageDialog(null, "Error, asegúrate de ingresar todos los datos solicitados.", "ERROR", JOptionPane.ERROR_MESSAGE);
 				            
 				        } catch (SQLException e2) {
 				        	
-				            JOptionPane.showMessageDialog(null, "Error al querer conectar con la base de datos: " + e2.getMessage());
+				            JOptionPane.showMessageDialog(null, "Ocurrio un error al querer conectar con la base de datos: " + e2.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 				        }
 						
 						
@@ -251,6 +287,7 @@ public class IngresoDatos_Modificacion extends JDialog {
 			}
 			{
 				JButton cancelButton = new JButton("CANCELAR");
+				cancelButton.setToolTipText("Cancelar registro/actualización");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						
@@ -274,12 +311,14 @@ public class IngresoDatos_Modificacion extends JDialog {
 
 	    // Llenamos las casillas
 	    txtCodigo.setText(codigo);
+	    txtCodigo.setEnabled(false);
+	    
 	    txtNombre.setText(nombre);
 	    txtPrecioCompra.setText(precioCompra);
 	    txtPrecioVenta.setText(precioVenta);
 	    txtStock.setText(stock);
 
 	    // Cambiamos el título
-	    lblTitulo.setText("ACTUALIZAR"); 
+	    lblTitulo.setText("Actualizar"); 
 	}
 }

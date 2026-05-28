@@ -33,6 +33,7 @@ public class MenuProductos extends JFrame {
 		Connection Conexion = null;
 		Statement SentenciaSQL = null;
 		ResultSet Rs = null;
+		private JLabel LblCantidadProductos;
 		
 	/**
 	 * Launch the application.
@@ -69,6 +70,7 @@ public class MenuProductos extends JFrame {
 		contentPane.add(lblProductos);
 		
 		JButton BtnSalir = new JButton("Volver al menú principal");
+		BtnSalir.setToolTipText("Con este botón podra volver al menu principal");
 		BtnSalir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//Volvemos al menú principal
@@ -97,6 +99,10 @@ public class MenuProductos extends JFrame {
 		TablaProductos = new JTable(modelo);
 		scrollPane.setViewportView(TablaProductos);
 		
+		// Removemos la columna 0 (ID) de la vista de la tabla. 
+		// El modelo (DefaultTableModel) seguirá teniendo los 6 datos.
+		TablaProductos.removeColumn(TablaProductos.getColumnModel().getColumn(0));
+		
 		//Personalizar tabla
 		TablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		TablaProductos.setRowSelectionAllowed(true);
@@ -104,6 +110,7 @@ public class MenuProductos extends JFrame {
 		
 //---BOTON AGREGAR-----------------------------------------------------------------------------------------------------------------------------		
 		JButton btnAGREGAR = new JButton("AGREGAR");
+		btnAGREGAR.setToolTipText("Al accionar este botón aparecera una ventana en la cual podra ingresar los datos para registrar un nuevo producto.");
 		btnAGREGAR.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -121,6 +128,7 @@ public class MenuProductos extends JFrame {
 		contentPane.add(btnAGREGAR);
 		
 		JButton btnActualizar = new JButton("ACTUALIZAR");
+		btnActualizar.setToolTipText("Al accionar este botón podra actualizar los datos de un producto.");
 		btnActualizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -130,12 +138,12 @@ public class MenuProductos extends JFrame {
 				if(RegistroSeleccionado >= 0) {
 					
 					//Extraemos los datos de la fila seleccionada
-					id = TablaProductos.getValueAt(RegistroSeleccionado, 0).toString();
-					codigo = TablaProductos.getValueAt(RegistroSeleccionado, 1).toString();
-					nombre = TablaProductos.getValueAt(RegistroSeleccionado, 2).toString();
-					precioCompra = TablaProductos.getValueAt(RegistroSeleccionado, 3).toString();
-					precioVenta = TablaProductos.getValueAt(RegistroSeleccionado, 4).toString();
-					stock = TablaProductos.getValueAt(RegistroSeleccionado, 5).toString();
+					id = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 0).toString();
+					codigo = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 1).toString();
+					nombre = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 2).toString();
+					precioCompra = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 3).toString();
+					precioVenta = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 4).toString();
+					stock = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 5).toString();
 					
 					//Instanciamos la ventana
 					IngresoDatos_Modificacion VentanaDatos = new IngresoDatos_Modificacion();
@@ -154,7 +162,7 @@ public class MenuProductos extends JFrame {
 					
 				}else {
 					
-					JOptionPane.showMessageDialog(null, "Seleccione un registro para poder realizar esta acción.");
+					JOptionPane.showMessageDialog(null, "Seleccione un registro para poder realizar esta acción.", "ACCIÓN FALTANTE", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
@@ -164,6 +172,7 @@ public class MenuProductos extends JFrame {
 		
 //---BOTON ELIMINAR-----------------------------------------------------------------------------------------------------------------------------
 		JButton btnEliminar = new JButton("ELIMINAR");
+		btnEliminar.setToolTipText("Al accionar este botón podra eliminar un producto de los que se encuentran registrados.");
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -175,11 +184,11 @@ public class MenuProductos extends JFrame {
 				if(RegistroSeleccionado >= 0) {
 					
 					confirmacion = JOptionPane.showConfirmDialog(null, "¿Está seguro de eliminar este producto de la base de datos? Está acción no se puede revertir.", 
-							"CONFIRMAR ELIMINACION", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+							"CONFIRMAR ELIMINACION", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 					
 					if(confirmacion == JOptionPane.YES_OPTION){//Si la respuesta es si se ejecutara este registro
 						
-						idProducto = TablaProductos.getValueAt(RegistroSeleccionado, 0).toString();//Extraemos el id delproducto, el 0 es porque en esa fila se encuentra el id
+						idProducto = TablaProductos.getModel().getValueAt(RegistroSeleccionado, 0).toString();//Extraemos el id delproducto, el 0 es porque en esa fila se encuentra el id
 						
 						try {
 							
@@ -193,7 +202,7 @@ public class MenuProductos extends JFrame {
 							filaAfectada = pstmt.executeUpdate();//Ejecuta la accion
 							
 							if (filaAfectada > 0) {
-								JOptionPane.showMessageDialog(null, "¡Producto eliminado exitosamente!");
+								JOptionPane.showMessageDialog(null, "¡Producto eliminado exitosamente!", "PROCESO EXITOSO", JOptionPane.INFORMATION_MESSAGE);
 								
 								Mostrar_Informacion(); //Se actualiza la tabla
 							}
@@ -203,22 +212,27 @@ public class MenuProductos extends JFrame {
 							
 						}catch(SQLException e2){
 							
-							JOptionPane.showMessageDialog(null, "Sucedio un error al eliminar el registro: "+e2.getMessage());
+							JOptionPane.showMessageDialog(null, "Sucedio un error al eliminar el registro: "+e2.getMessage(),  "ERROR", JOptionPane.ERROR_MESSAGE);
 							
 						}
 						
 					}else {
-						JOptionPane.showMessageDialog(null, "Acción cancelada.");
+						JOptionPane.showMessageDialog(null, "Acción cancelada.", "CANCELAR", JOptionPane.WARNING_MESSAGE);
 					}
 					
 				}else {
-					JOptionPane.showMessageDialog(null, "Seleccione un registro para poder realizar esta acción.");
+					JOptionPane.showMessageDialog(null, "Seleccione un registro para poder realizar esta acción.", "ACCIÓN FALTANTE", JOptionPane.WARNING_MESSAGE);
 				}
 				
 			}
 		});
 		btnEliminar.setBounds(10, 309, 110, 31);
 		contentPane.add(btnEliminar);
+		
+		LblCantidadProductos = new JLabel("Cantidad de productos: ");
+		LblCantidadProductos.setFont(new Font("Tahoma", Font.BOLD, 10));
+		LblCantidadProductos.setBounds(496, 309, 170, 12);
+		contentPane.add(LblCantidadProductos);
 		
 		//Programamos la tecla ESC para que al presionarla regrese al menú principal
 		
@@ -273,10 +287,11 @@ public class MenuProductos extends JFrame {
 			
 		}catch(SQLException e1) {
 			
-			JOptionPane.showMessageDialog(null, "Ocurrio un error al querer cargar los datos: "+e1.toString());
+			JOptionPane.showMessageDialog(null, "Ocurrio un error al querer cargar los datos: "+e1.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			
 		}
 		
+		LblCantidadProductos.setText("Cantidad de productos: " + modelo.getRowCount());// Usamos el número de filas del modelo para saber cuántos productos hay
 		
 	}
 }
