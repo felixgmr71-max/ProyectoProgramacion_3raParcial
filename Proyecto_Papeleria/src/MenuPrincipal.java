@@ -20,7 +20,7 @@ public class MenuPrincipal extends JFrame {
 	private JPanel contentPane;
 	private String rolActual;
 	
-	// DECLARAMOS LOS BOTONES AQUÍ ARRIBA PARA QUE TODOS LOS MÉTODOS LOS VEAN
+	// globalizamos botones
 	private JButton BtnProveedores;
 	private JButton BtnCatalogoUsuarios;
 	private JButton BtnProductos;
@@ -142,16 +142,11 @@ public class MenuPrincipal extends JFrame {
 		aplicarPermisos();
 	}
 	
-	private void aplicarPermisos() {
-			
-			// Ya podemos comentar o borrar el chivato para que no salga el mensaje molesto
-			// javax.swing.JOptionPane.showMessageDialog(null, "El rol detectado es: [" + rolActual + "]");
-			
+	private void aplicarPermisos() {		
 			if (rolActual != null) {
 				// Limpiamos espacios basura
 				String rolLimpio = rolActual.trim();
 				
-				// ¡AQUÍ ESTÁ EL CAMBIO! Validamos si el rol es un "2"
 				if (rolLimpio.equals("2")) {
 					BtnCatalogoUsuarios.setEnabled(false);;
 					BtnProveedores.setEnabled(false);

@@ -132,7 +132,6 @@ public class MenuCatalogoUsuarios extends JFrame {
 		});
 		pnlSur.add(btnAgregar);
 		
-		// Botón Modificar con lógica de 2 pasos
 		btnModificar = new JButton("Modificar");
 		btnModificar.setForeground(new Color(0, 128, 192));
 		btnModificar.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -144,7 +143,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 					return;
 				}
 
-				// PASO 1: Cargar datos a las cajas
+				
 				if(btnModificar.getText().equals("Modificar")) {
 					int fila = table.getSelectedRow();
 					
@@ -164,7 +163,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 					btnEliminar.setEnabled(false);
 					table.setEnabled(false);
 				} 
-				// PASO 2: Guardar cambios
+		
 				else {
 					String usuario = txtUsuario.getText().trim();
 					String password = new String(passwordField.getPassword()).trim();
@@ -339,7 +338,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				int fila = table.getSelectedRow();
 				if(fila >= 0) {
-					// Guardamos el ID en secreto
+					// Guardamos el ID en sistema
 					idUserModify = Integer.parseInt(table.getValueAt(fila, 0).toString());
 				}
 			}
@@ -370,8 +369,6 @@ public class MenuCatalogoUsuarios extends JFrame {
 		modelo.setRowCount(0);
 
 		Conexion conDB = new Conexion();
-		// conDB.inicializarBaseDeDatos(); // Descomenta esto si lo ocupas en tu sistema real
-
 		String sql = "SELECT id_usuario, username, password, rol_id FROM usuarios";
 
 		try (Connection conn = conDB.conectar();

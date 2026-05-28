@@ -32,11 +32,11 @@ public class InicioSesion extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					// 1. Preparamos la BD antes de mostrar algo
+					// se prepara la bd
 					Conexion con = new Conexion();
 					con.inicializarBaseDeDatos();
 					
-					// 2. Mostramos la ventana
+					// mostramos la ventana
 					InicioSesion frame = new InicioSesion();
 					frame.setLocationRelativeTo(null); 
 					frame.setVisible(true);
@@ -158,8 +158,7 @@ public class InicioSesion extends JFrame {
 					java.sql.ResultSet rs = ps.executeQuery();
 					
 					if (rs.next()) {
-						// === AQUÍ CAPTURAMOS EL ROL DE LA BASE DE DATOS ===
-						// Sustituye "rol" por el nombre real de tu columna en SQLite
+		
 						String rolUsuario = rs.getString("rol_id"); 
 						
 						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
