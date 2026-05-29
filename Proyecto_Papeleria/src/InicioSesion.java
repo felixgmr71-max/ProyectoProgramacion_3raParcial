@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.JOptionPane;
+import java.awt.Toolkit;
 
 public class InicioSesion extends JFrame {
 
@@ -51,6 +52,7 @@ public class InicioSesion extends JFrame {
 	 * Create the frame.
 	 */
 	public InicioSesion() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\craft_material_school_stationery_attach_attachment_pin_push_icon_262781.png"));
 		setTitle("Papelería");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

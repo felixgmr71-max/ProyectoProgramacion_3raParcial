@@ -26,6 +26,7 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 
 public class MenuProveedores extends JFrame {
 
@@ -63,6 +64,7 @@ public class MenuProveedores extends JFrame {
 	}
 
 	public MenuProveedores() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\truck_13241.png"));
 		setTitle("Proveedores");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 850, 500); 
@@ -114,7 +116,6 @@ public class MenuProveedores extends JFrame {
 					return;
 				}
 
-				// --- PROTECCIÓN: Evitamos el error de UNIQUE constraint ---
 				if(existeEmpresa(txtEmpresa.getText(), 0)) {
 					JOptionPane.showMessageDialog(null, "La empresa '" + txtEmpresa.getText() + "' ya está registrada.\nPor favor, ingrese un nombre diferente.", "EMPRESA DUPLICADA", JOptionPane.WARNING_MESSAGE);
 					return;
@@ -154,7 +155,6 @@ public class MenuProveedores extends JFrame {
 					return;
 				}
 
-				// PASO 1: Subir datos y BLOQUEAR botones
 				if(btnModificar.getText().equals("Modificar")) {
 					int fila = tabla.getSelectedRow();
 					txtEmpresa.setText(tabla.getValueAt(fila, 1).toString());
@@ -167,10 +167,8 @@ public class MenuProveedores extends JFrame {
 					btnEliminar.setEnabled(false);
 					tabla.setEnabled(false); 
 				} 
-				// PASO 2: Guardar
 				else {
 					
-					// --- VALIDACIÓN DE CAMPOS VACÍOS (Misma que al agregar) ---
 					if(txtEmpresa.getText().trim().isEmpty()) {
 						JOptionPane.showMessageDialog(null, "El nombre de la empresa es obligatorio.", "DATO REQUERIDO", JOptionPane.WARNING_MESSAGE);
 						return;
@@ -186,7 +184,6 @@ public class MenuProveedores extends JFrame {
 						return;
 					}
 
-					// --- PROTECCIÓN: Evitamos el error de UNIQUE al modificar ---
 					if(existeEmpresa(txtEmpresa.getText(), idProveedor)) {
 						JOptionPane.showMessageDialog(null, "El nombre '" + txtEmpresa.getText() + "' ya pertenece a otro registro.\nPor favor, ingrese un nombre diferente.", "EMPRESA DUPLICADA", JOptionPane.WARNING_MESSAGE);
 						return;

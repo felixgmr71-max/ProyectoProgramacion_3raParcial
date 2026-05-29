@@ -9,11 +9,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
+import javax.swing.JFormattedTextField;
+import javax.swing.text.MaskFormatter;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -21,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import javax.swing.SwingConstants;
+import java.awt.Toolkit;
 
 public class MenuVentas extends JFrame {
 
@@ -29,8 +33,11 @@ public class MenuVentas extends JFrame {
 	// Panel principal
 	private JPanel contentPane;
 
-	// Caja de texto para buscar productos
+	// Cajas de texto
 	private JTextField TxtProductos;
+	private JFormattedTextField txtTelefono;
+	private JTextField txtNombre;
+	private JTextField txtDireccion;
 
 	// Tablas
 	private JTable TbProductosDsp;
@@ -64,10 +71,11 @@ public class MenuVentas extends JFrame {
 	}
 
 	public MenuVentas() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\Line_ui_icons_Svg-10_icon-icons.com_72171.png"));
 		// --- CONFIGURACIÓN DE LA VENTANA ---
-		setTitle("Ventas");
+		setTitle("Ventas y Facturación");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1050, 650); 
+		setBounds(100, 100, 1150, 680); 
 		setLocationRelativeTo(null); 
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
@@ -88,17 +96,60 @@ public class MenuVentas extends JFrame {
 		modeloCarrito.addColumn("Cantidad");
 		modeloCarrito.addColumn("Subtotal");
 
+		// --- PANEL NORTE (TÍTULO, CLIENTE Y BÚSQUEDA) ---
 		JPanel pnlNorte = new JPanel();
 		pnlNorte.setBackground(new Color(0, 64, 128));
 		pnlNorte.setLayout(new BorderLayout());
 		contentPane.add(pnlNorte, BorderLayout.NORTH);
 		
-		JLabel lblVentas = new JLabel("Ventas", SwingConstants.CENTER);
+		JLabel lblVentas = new JLabel("Ventana de Venta", SwingConstants.CENTER);
 		lblVentas.setForeground(Color.WHITE);
 		lblVentas.setFont(new Font("Century Gothic", Font.BOLD, 30));
 		lblVentas.setBorder(new EmptyBorder(10, 0, 5, 0));
 		pnlNorte.add(lblVentas, BorderLayout.NORTH);
 		
+		// Sub-panel para Datos del Cliente
+		JPanel pnlCliente = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+		pnlCliente.setOpaque(false);
+		
+		JLabel lblTel = new JLabel("Teléfono:");
+		lblTel.setForeground(Color.WHITE);
+		lblTel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		try {
+		    MaskFormatter mascaraTel = new MaskFormatter("(###) ###-####");
+		    mascaraTel.setPlaceholderCharacter('_'); // Para que muestre guiones bajos donde falta escribir
+		    txtTelefono = new JFormattedTextField(mascaraTel);
+		    txtTelefono.setColumns(11);
+		    txtTelefono.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+		} catch (java.text.ParseException ex) {
+		    txtTelefono = new JFormattedTextField();
+		}
+		
+		JButton btnAutocompletar = new JButton("Autocompletar");
+		btnAutocompletar.setForeground(new Color(0, 128, 192));
+		btnAutocompletar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		
+		JLabel lblNom = new JLabel("Nombre:");
+		lblNom.setForeground(Color.WHITE);
+		lblNom.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		txtNombre = new JTextField(15);
+		
+		JLabel lblDir = new JLabel("Dirección:");
+		lblDir.setForeground(Color.WHITE);
+		lblDir.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		txtDireccion = new JTextField(15);
+		
+		pnlCliente.add(lblTel);
+		pnlCliente.add(txtTelefono);
+		pnlCliente.add(btnAutocompletar);
+		pnlCliente.add(lblNom);
+		pnlCliente.add(txtNombre);
+		pnlCliente.add(lblDir);
+		pnlCliente.add(txtDireccion);
+		
+		pnlNorte.add(pnlCliente, BorderLayout.CENTER);
+		
+		// Sub-panel para Buscar Productos
 		JPanel pnlBusqueda = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
 		pnlBusqueda.setOpaque(false); 
 		
@@ -114,14 +165,10 @@ public class MenuVentas extends JFrame {
 		JButton BtnBuscar = new JButton("Buscar");
 		BtnBuscar.setForeground(new Color(0, 128, 192));
 		BtnBuscar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		BtnBuscar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				mostrarProductos(); 
-			}
-		});
 		pnlBusqueda.add(BtnBuscar);
 		pnlNorte.add(pnlBusqueda, BorderLayout.SOUTH);
 
+		// --- PANEL SUR (BOTONES DE ACCIÓN) ---
 		JPanel pnlSur = new JPanel();
 		pnlSur.setBackground(new Color(0, 64, 128));
 		pnlSur.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
@@ -158,6 +205,7 @@ public class MenuVentas extends JFrame {
 		LblSubtotal.setBorder(new EmptyBorder(0, 20, 0, 0));
 		pnlSur.add(LblSubtotal);
 
+		// --- PANEL CENTRAL (TABLAS) ---
 		JPanel pnlCentro = new JPanel();
 		pnlCentro.setBackground(Color.WHITE);
 		pnlCentro.setLayout(new GridLayout(1, 2, 20, 0)); 
@@ -197,9 +245,7 @@ public class MenuVentas extends JFrame {
 		pnlCentro.add(pnlIzquierdo);
 		pnlCentro.add(pnlDerecho);
 
-//ESTÉTICA Y RESTRICCIONES DE LAS TABLAS
-
-		// Decoración Tabla Productos
+		// ESTÉTICA Y RESTRICCIONES DE LAS TABLAS
 		TbProductosDsp.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 		TbProductosDsp.getTableHeader().setBackground(new Color(0, 91, 159)); 
 		TbProductosDsp.getTableHeader().setForeground(Color.WHITE);
@@ -212,7 +258,6 @@ public class MenuVentas extends JFrame {
 		TbProductosDsp.getTableHeader().setReorderingAllowed(false);
 		TbProductosDsp.getTableHeader().setResizingAllowed(false);
 		
-		// Decoración Tabla Carrito
 		TbCarritoCompras.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 		TbCarritoCompras.getTableHeader().setBackground(new Color(0, 91, 159)); 
 		TbCarritoCompras.getTableHeader().setForeground(Color.WHITE);
@@ -224,6 +269,47 @@ public class MenuVentas extends JFrame {
 		TbCarritoCompras.setDefaultEditor(Object.class, null);
 		TbCarritoCompras.getTableHeader().setReorderingAllowed(false);
 		TbCarritoCompras.getTableHeader().setResizingAllowed(false);
+
+
+		BtnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				mostrarProductos(); 
+			}
+		});
+
+		btnAutocompletar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String telefono = txtTelefono.getText().replace("_", "").replace("(", "").replace(")", "").replace("-", "").trim();
+
+				if (telefono.isEmpty()) {
+				    JOptionPane.showMessageDialog(null, "Ingrese un número de teléfono primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
+				    return;
+				}
+				
+				try {
+					Conexion con = new Conexion();
+					Connection cn = con.conectar();
+					String sql = "SELECT nombre_completo, direccion FROM clientes WHERE telefono = ?";
+					PreparedStatement ps = cn.prepareStatement(sql);
+					ps.setString(1, telefono);
+					ResultSet rs = ps.executeQuery();
+					
+					if (rs.next()) {
+						txtNombre.setText(rs.getString("nombre_completo"));
+						txtDireccion.setText(rs.getString("direccion"));
+					} else {
+						JOptionPane.showMessageDialog(null, "Cliente no encontrado.\nLlene sus datos manualmente y se registrará al finalizar la venta.", "Nuevo Cliente", JOptionPane.INFORMATION_MESSAGE);
+						txtNombre.setText("");
+						txtDireccion.setText("");
+					}
+					rs.close();
+					ps.close();
+					cn.close();
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Error al buscar cliente: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 
 		BtnAgregar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -288,7 +374,6 @@ public class MenuVentas extends JFrame {
 				modeloCarrito.addRow(datos);
 				mostrarProductos();
 				calcularTotal();
-				JOptionPane.showMessageDialog(null,"Producto agregado correctamente","Éxito",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 
@@ -314,7 +399,7 @@ public class MenuVentas extends JFrame {
 				int idProducto = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 0).toString());
 				int cantidadAnterior = Integer.parseInt(TbCarritoCompras.getValueAt(fila, 3).toString());
 				double precio = Double.parseDouble(TbCarritoCompras.getValueAt(fila, 2).toString());
-				int diferencia =nuevaCantidad - cantidadAnterior;
+				int diferencia = nuevaCantidad - cantidadAnterior;
 
 				try {
 					Conexion con = new Conexion();
@@ -354,7 +439,6 @@ public class MenuVentas extends JFrame {
 				modeloCarrito.setValueAt(subtotal, fila, 4);
 				mostrarProductos();
 				calcularTotal();
-				JOptionPane.showMessageDialog(null,"Cantidad modificada correctamente","Modificación exitosa",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 
@@ -385,7 +469,6 @@ public class MenuVentas extends JFrame {
 				modeloCarrito.removeRow(fila);
 				mostrarProductos();
 				calcularTotal();
-				JOptionPane.showMessageDialog(null,"Producto eliminado correctamente","Exito",JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 
@@ -395,6 +478,15 @@ public class MenuVentas extends JFrame {
 					JOptionPane.showMessageDialog(null,"No hay productos en el carrito","Aviso",JOptionPane.WARNING_MESSAGE);
 					return;
 				}
+				
+				String telefono = txtTelefono.getText().replace("_", "").replace("(", "").replace(")", "").replace("-", "").trim();
+
+				if (telefono.isEmpty()) {
+				    JOptionPane.showMessageDialog(null, "Ingrese un número de teléfono primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
+				    return;
+				}				String nombre = txtNombre.getText().trim();
+				String direccion = txtDireccion.getText().trim();
+				
 				int totalProductos = 0;
 				double subtotalVenta = 0;
 				for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
@@ -403,18 +495,102 @@ public class MenuVentas extends JFrame {
 					totalProductos += cantidad;
 					subtotalVenta += subtotal;
 				}
+				
 				double iva = subtotalVenta * 0.16;
 				double totalFinal = subtotalVenta + iva;
 
-				JOptionPane.showMessageDialog(null,"VENTA REALIZADA CORRECTAMENTE"
-						+ "\n\nProductos vendidos: " + totalProductos
-						+ "\nSubtotal: $" + String.format("%.2f", subtotalVenta)
-						+ "\n+ IVA (16%): $" + String.format("%.2f", iva)
-						+ "\nTOTAL: $" + String.format("%.2f", totalFinal),
-						"¡VENTA EXITOSA!",JOptionPane.INFORMATION_MESSAGE);
-				
-				modeloCarrito.setRowCount(0);
-				calcularTotal();
+				try {
+					Conexion con = new Conexion();
+					Connection cn = con.conectar();
+					int idCliente = -1; 
+					
+					if (!telefono.isEmpty() && !nombre.isEmpty()) {
+						// Verificamos si existe por teléfono
+						PreparedStatement psCheck = cn.prepareStatement("SELECT id_cliente FROM clientes WHERE telefono = ?");
+						psCheck.setString(1, telefono);
+						ResultSet rsC = psCheck.executeQuery();
+						
+						if (rsC.next()) {
+							idCliente = rsC.getInt("id_cliente"); // Ya existe
+						} else {
+							// Es un cliente nuevo, lo insertamos
+							PreparedStatement psInsC = cn.prepareStatement("INSERT INTO clientes (nombre_completo, telefono, direccion) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+							psInsC.setString(1, nombre);
+							psInsC.setString(2, telefono);
+							psInsC.setString(3, direccion);
+							psInsC.executeUpdate();
+							
+							ResultSet rsKeys = psInsC.getGeneratedKeys();
+							if (rsKeys.next()) {
+								idCliente = rsKeys.getInt(1); // Obtenemos el ID que se le acaba de asignar
+							}
+							rsKeys.close();
+							psInsC.close();
+						}
+						rsC.close();
+						psCheck.close();
+					}
+					
+					// Obtenemos fecha y hora exacta del sistema
+					String fechaHoy = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+					
+					String sqlVenta = "INSERT INTO ventas (id_cliente, fecha, total) VALUES (?, ?, ?)";
+					PreparedStatement psVenta = cn.prepareStatement(sqlVenta, Statement.RETURN_GENERATED_KEYS);
+					
+					if (idCliente != -1) {
+						psVenta.setInt(1, idCliente);
+					} else {
+						// Si dejaron los campos vacíos, registramos Null para que sea Público General
+						psVenta.setNull(1, java.sql.Types.INTEGER); 
+					}
+					psVenta.setString(2, fechaHoy);
+					psVenta.setDouble(3, totalFinal);
+					psVenta.executeUpdate();
+					
+					int idVentaGenerada = -1;
+					ResultSet rsVentaKey = psVenta.getGeneratedKeys();
+					if (rsVentaKey.next()) {
+						idVentaGenerada = rsVentaKey.getInt(1);
+					}
+					rsVentaKey.close();
+					psVenta.close();
+					
+					String sqlDetalle = "INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
+					PreparedStatement psDetalle = cn.prepareStatement(sqlDetalle);
+					
+					for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
+						int idProd = Integer.parseInt(modeloCarrito.getValueAt(i, 0).toString());
+						double precioU = Double.parseDouble(modeloCarrito.getValueAt(i, 2).toString());
+						int cant = Integer.parseInt(modeloCarrito.getValueAt(i, 3).toString());
+						double subT = Double.parseDouble(modeloCarrito.getValueAt(i, 4).toString());
+						
+						psDetalle.setInt(1, idVentaGenerada);
+						psDetalle.setInt(2, idProd);
+						psDetalle.setInt(3, cant);
+						psDetalle.setDouble(4, precioU);
+						psDetalle.setDouble(5, subT);
+						psDetalle.executeUpdate(); 
+					}
+					psDetalle.close();
+					cn.close();
+					
+					JOptionPane.showMessageDialog(null,"VENTA GUARDADA CORRECTAMENTE"
+							+ "\n\nCliente: " + (nombre.isEmpty() ? "Público General" : nombre)
+							+ "\nProductos vendidos: " + totalProductos
+							+ "\nSubtotal: $" + String.format("%.2f", subtotalVenta)
+							+ "\n+ IVA (16%): $" + String.format("%.2f", iva)
+							+ "\nTOTAL: $" + String.format("%.2f", totalFinal),
+							"¡VENTA EXITOSA!",JOptionPane.INFORMATION_MESSAGE);
+					
+					modeloCarrito.setRowCount(0);
+					calcularTotal();
+					txtTelefono.setText("");
+					txtNombre.setText("");
+					txtDireccion.setText("");
+					
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null,"Error al registrar la venta en Base de Datos:\n" + ex.getMessage(),"Error Crítico",JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 
@@ -430,6 +606,7 @@ public class MenuVentas extends JFrame {
 		javax.swing.KeyStroke esc = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0);
 		this.getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(esc, "accionVolver");
 		this.getRootPane().getActionMap().put("accionVolver", new javax.swing.AbstractAction() {
+			private static final long serialVersionUID = 1L;
 			public void actionPerformed(ActionEvent e) {
 				BtnSalir.doClick(); 
 			}
@@ -489,6 +666,8 @@ public class MenuVentas extends JFrame {
 		for (int i=0; i<modeloCarrito.getRowCount(); i++) {
 			total += Double.parseDouble(modeloCarrito.getValueAt(i, 4).toString());
 		}
-		LblSubtotal.setText("Total: $" + total);
+		// Sumándole el IVA en vivo al letrero
+		double conIva = total + (total * 0.16);
+		LblSubtotal.setText(String.format("Total c/ IVA: $%.2f", conIva));
 	}
 }

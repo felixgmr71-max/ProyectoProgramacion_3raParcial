@@ -26,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
+import java.awt.Toolkit;
 
 public class MenuCatalogoUsuarios extends JFrame {
 
@@ -59,9 +60,10 @@ public class MenuCatalogoUsuarios extends JFrame {
 	}
 
 	public MenuCatalogoUsuarios() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\effective_employees_users_team_group_icon_152042.png"));
 		setTitle("Catálogo de Usuarios");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 850, 500); // Mismo tamaño que proveedores
+		setBounds(100, 100, 850, 500); 
 		setLocationRelativeTo(null);
 		
 		contentPane = new JPanel();
@@ -381,7 +383,7 @@ public class MenuCatalogoUsuarios extends JFrame {
 				fila[1] = rs.getString("username");
 				fila[2] = "********"; // Máscara para la vista del usuario
 				
-				// Transformamos el número a Texto para que se vea bonito
+				// Transformamos el número a Texto 
 				int rolId = rs.getInt("rol_id");
 				fila[3] = (rolId == 1) ? "Admin" : "Vendedor";
 				

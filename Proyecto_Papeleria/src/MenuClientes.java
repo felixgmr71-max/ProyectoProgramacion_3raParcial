@@ -26,6 +26,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.Toolkit;
 
 public class MenuClientes extends JFrame {
 
@@ -72,6 +73,7 @@ public class MenuClientes extends JFrame {
 	}
 
 	public MenuClientes() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\business_application_addmale_useradd_insert_add_user_client_2312.png"));
 		setTitle("Catálogo de Clientes");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1050, 550); 
@@ -159,7 +161,6 @@ public class MenuClientes extends JFrame {
 					return;
 				}
 
-				// PASO 1: Cargar datos en las cajas y Bloquear
 				if(btnModificar.getText().equals("Modificar")) {
 					int fila = table.getSelectedRow();
 					
@@ -181,7 +182,6 @@ public class MenuClientes extends JFrame {
 					btnEliminarTodo.setEnabled(false);
 					table.setEnabled(false);
 				} 
-				// PASO 2: Guardar
 				else {
 					String nuevoNombre = txtNombre.getText().trim();
 					String nuevaDireccion = txtDireccion.getText().trim();
@@ -198,7 +198,7 @@ public class MenuClientes extends JFrame {
 						return;
 					}
 					
-					// --- VALIDACIÓN DE DUPLICADOS AL MODIFICAR ---
+					// validacion
 					if(existeCliente(nuevoNombre, idCliente)) {
 						JOptionPane.showMessageDialog(null, "El cliente '" + nuevoNombre + "' ya pertenece a otro registro.", "REGISTRO DUPLICADO", JOptionPane.WARNING_MESSAGE);
 						return;
@@ -479,8 +479,7 @@ public class MenuClientes extends JFrame {
 		table.setDefaultEditor(Object.class, null);
 		table.getTableHeader().setReorderingAllowed(false);
 		
-		// --- AJUSTE Y DISEÑO DE COLUMNAS ---
-		// Se apaga el auto-redimensionamiento para que respete los anchos y active el scroll horizontal si se necesita
+		
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
 		// Ocultar ID

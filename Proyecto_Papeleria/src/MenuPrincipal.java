@@ -3,16 +3,16 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
-import java.awt.Font;
 import javax.swing.JButton;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import javax.swing.SwingConstants;
+import java.awt.Toolkit;
 
 public class MenuPrincipal extends JFrame {
 
@@ -28,6 +28,7 @@ public class MenuPrincipal extends JFrame {
 	private JButton BtnClientes;
 	
 	public static String rolGlobal = "1";
+	private JButton btnHistorial;
 
 	/**
 	 * Launch the application.
@@ -55,19 +56,39 @@ public class MenuPrincipal extends JFrame {
 	}
 	
 	public MenuPrincipal(String rol) {
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\user\\Downloads\\1486564398-menu2_81519.png"));
+
 		rolGlobal = rol;
 		this.rolActual = rol; // Guardamos el rol que nos mandó el login
 		setTitle("Menú Principal");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 690, 425);
+		
+		setBounds(100, 100, 690, 470);
 		setLocationRelativeTo(null); //Centra la ventana
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(new GridLayout(2, 1, 0, 0));
+		contentPane.setLayout(new BorderLayout(0, 0)); 
+		
+		JPanel panelHeader = new JPanel();
+		panelHeader.setBackground(new Color(0, 64, 128)); 
+		panelHeader.setBorder(new EmptyBorder(10, 10, 10, 10));
+		contentPane.add(panelHeader, BorderLayout.NORTH);
+		
+		JLabel lblTituloMenu = new JLabel("Menú Principal");
+		lblTituloMenu.setForeground(Color.WHITE);
+		lblTituloMenu.setFont(new Font("Century Gothic", Font.BOLD, 28));
+		lblTituloMenu.setHorizontalAlignment(SwingConstants.CENTER);
+		panelHeader.add(lblTituloMenu);
+		
+		// --- CONTENEDOR CENTRAL PARA LOS BOTONES ---
+		JPanel panelCentralBotones = new JPanel();
+		panelCentralBotones.setLayout(new GridLayout(2, 1, 0, 0));
+		contentPane.add(panelCentralBotones, BorderLayout.CENTER);
 		
 		JPanel panel = new JPanel();
-		contentPane.add(panel);
+		panelCentralBotones.add(panel);
 		panel.setLayout(new GridLayout(3, 1, 0, 0));
 		
 		BtnProductos = new JButton("Productos");
@@ -110,8 +131,8 @@ public class MenuPrincipal extends JFrame {
 		BtnProveedores.setFont(new Font("Century Gothic", Font.BOLD, 20));
 		
 		JPanel panel_1 = new JPanel();
-		contentPane.add(panel_1);
-		panel_1.setLayout(new GridLayout(2, 1, 0, 0));
+		panelCentralBotones.add(panel_1);
+		panel_1.setLayout(new GridLayout(3, 1, 0, 0));
 		
 		BtnClientes = new JButton("Clientes");
 		BtnClientes.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -139,19 +160,32 @@ public class MenuPrincipal extends JFrame {
 		});
 		BtnCatalogoUsuarios.setFont(new Font("Century Gothic", Font.BOLD, 20));
 		
+		btnHistorial = new JButton("Historial");
+		btnHistorial.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				MenuHistventas menuhist = new MenuHistventas();
+				menuhist.setVisible(true);
+				dispose(); 
+			}
+		});
+		btnHistorial.setForeground(new Color(0, 128, 192));
+		btnHistorial.setFont(new Font("Century Gothic", Font.BOLD, 20));
+		panel_1.add(btnHistorial);
+		
 		aplicarPermisos();
 	}
 	
 	private void aplicarPermisos() {		
-			if (rolActual != null) {
-				// Limpiamos espacios basura
-				String rolLimpio = rolActual.trim();
-				
-				if (rolLimpio.equals("2")) {
-					BtnCatalogoUsuarios.setEnabled(false);;
-					BtnProveedores.setEnabled(false);
-					BtnProductos.setEnabled(false);
-				}
+		if (rolActual != null) {
+			// Limpiamos espacios basura
+			String rolLimpio = rolActual.trim();
+			
+			if (rolLimpio.equals("2")) {
+				BtnCatalogoUsuarios.setEnabled(false);
+				BtnProveedores.setEnabled(false);
+				BtnProductos.setEnabled(false);
+				btnHistorial.setEnabled(false);
 			}
 		}
+	}
 }
