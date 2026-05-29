@@ -32,7 +32,14 @@ public class MenuHistventas extends JFrame {
     private JPanel contentPane;
     private JTable TablaHistorial;
     
-    DefaultTableModel modelo = new DefaultTableModel(); 
+    // Sobrescribimos isCellEditable para que devuelva false y bloquee la edición con doble clic
+    DefaultTableModel modelo = new DefaultTableModel() {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }; 
     
     // Variables de acceso a datos
     Connection Conexion = null;
@@ -48,7 +55,7 @@ public class MenuHistventas extends JFrame {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                	MenuHistventas frame = new MenuHistventas();
+                    MenuHistventas frame = new MenuHistventas();
                     frame.setLocationRelativeTo(null); 
                     frame.setVisible(true);
                 } catch (Exception e) {
@@ -277,7 +284,7 @@ public class MenuHistventas extends JFrame {
         LblCantidadVentas.setText("Cantidad de ventas registradas: " + modelo.getRowCount()); 
     }
     
-    // --- VENTANA EMERGENTE MAESTRO-DETALLE ---
+    // --- VENTANA EMERGENTE ---
     private void abrirVentanaDesglose(String idVenta, String comprador) {
         JDialog dialogo = new JDialog(this, "Desglose de Ticket", true);
         dialogo.setSize(450, 350);
@@ -294,7 +301,14 @@ public class MenuHistventas extends JFrame {
         lblInfo.setFont(new Font("Century Gothic", Font.BOLD, 16));
         panelSupDialogo.add(lblInfo);
         
-        DefaultTableModel modeloDesglose = new DefaultTableModel();
+        DefaultTableModel modeloDesglose = new DefaultTableModel() {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
         modeloDesglose.addColumn("Producto");
         modeloDesglose.addColumn("Cant.");
         modeloDesglose.addColumn("Precio U.");

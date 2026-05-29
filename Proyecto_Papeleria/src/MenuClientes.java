@@ -337,6 +337,17 @@ public class MenuClientes extends JFrame {
 		
 		txtNombre = new JTextField();
 		txtNombre.setBounds(130, 60, 250, 25);
+		
+		txtNombre.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				// Si el carácter presionado es un número (del 0 al 9), se ignora
+				if (Character.isDigit(c)) {
+					e.consume(); 
+				}
+			}
+		});
 		pnlFormulario.add(txtNombre);
 		
 		JLabel lblDireccion = new JLabel("Dirección:");

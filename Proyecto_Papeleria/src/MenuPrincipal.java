@@ -177,7 +177,6 @@ public class MenuPrincipal extends JFrame {
 	
 	private void aplicarPermisos() {		
 		if (rolActual != null) {
-			// Limpiamos espacios basura
 			String rolLimpio = rolActual.trim();
 			
 			if (rolLimpio.equals("2")) {

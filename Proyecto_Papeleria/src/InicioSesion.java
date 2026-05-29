@@ -144,7 +144,7 @@ public class InicioSesion extends JFrame {
 				String pass = new String(passwordField.getPassword());
 				
 				if (usr.equals("Usuario...") || pass.equals("Contraseña...") || usr.isEmpty() || pass.isEmpty()) {
-					javax.swing.JOptionPane.showMessageDialog(null, "Por favor, llene todos los campos.");
+					javax.swing.JOptionPane.showMessageDialog(null, "Por favor, llene todos los campos.", "Datos faltantes", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
@@ -163,7 +163,7 @@ public class InicioSesion extends JFrame {
 		
 						String rolUsuario = rs.getString("rol_id"); 
 						
-						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!");
+						javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido, " + rs.getString("username") + "!", "Registro Exitoso", JOptionPane.INFORMATION_MESSAGE);
 						
 						// Le mandamos el rol como parámetro al constructor del menú
 						MenuPrincipal menu = new MenuPrincipal(rolUsuario);
@@ -171,11 +171,11 @@ public class InicioSesion extends JFrame {
 						
 						dispose(); 
 					} else {
-						javax.swing.JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
+						javax.swing.JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos", "Datos faltantes", JOptionPane.INFORMATION_MESSAGE);
 					}
 					
 				} catch (Exception ex) {
-					javax.swing.JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage());
+					javax.swing.JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
